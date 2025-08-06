@@ -140,9 +140,41 @@
   </div>
 
   <!-- Звук дождя -->
-  <audio id="rain" loop>
+  <audio id="rain">
     <source src="rain_sound.mp3" type="audio/mpeg">
   </audio>
+
+  <script>
+    let workDuration = 25 * 60;
+    let breakDuration = 5 * 60;
+    let isWork = true;
+    let timer;
+    let remaining = workDuration;
+    let soundEnabled = false;
+  
+    window.addEventListener('DOMContentLoaded', () => {
+      const rain = document.getElementById('rain');
+  
+      // Цикличное воспроизведение звука
+      rain.addEventListener('ended', () => {
+        rain.currentTime = 0;
+        rain.play();
+      });
+  
+      const enableSoundBtn = document.getElementById('enableSound');
+      enableSoundBtn.addEventListener('click', () => {
+        soundEnabled = true;
+        rain.play();
+  
+        enableSoundBtn.classList.add('fade-out');
+        setTimeout(() => {
+          enableSoundBtn.style.display = 'none';
+        }, 500);
+      });
+  
+      // ... (остальной код таймера и анимации дождя без изменений)
+    });
+  </script>
 
   <script>
     let workDuration = 25 * 60;
@@ -281,3 +313,4 @@
   </script>
 </body>
 </html>
+
