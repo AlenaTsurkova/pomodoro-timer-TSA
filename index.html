@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pomodoro с каплями</title>
+  <title>Pomodoro с реалистичными каплями</title>
   <style>
     html, body {
       margin: 0;
@@ -116,7 +116,7 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
-    // offscreen-канвас для захвата видео раз в 0.5 секунды
+    // offscreen-канвас для захвата видео
     const offscreen = document.createElement('canvas');
     const offCtx = offscreen.getContext('2d');
 
@@ -132,9 +132,9 @@
       reset() {
         this.x = Math.random() * canvas.width;
         this.y = -30;
-        this.width = 12 + Math.random() * 6;
-        this.height = this.width * 1.8; // вытянутая форма
-        this.speed = 3 + Math.random() * 2;
+        this.width = 12 + Math.random() * 5;
+        this.height = this.width * 2.2; // более вытянутая форма
+        this.speed = 1 + Math.random() * 1.2; // медленное стекание
       }
       update() {
         this.y += this.speed;
@@ -142,8 +142,13 @@
       }
       draw() {
         ctx.save();
+
+        // форма капли - комбинация двух эллипсов
         ctx.beginPath();
-        ctx.ellipse(this.x, this.y, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
+        // нижняя округлая часть
+        ctx.ellipse(this.x, this.y + this.height * 0.1, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
+        // верхняя суженная часть
+        ctx.ellipse(this.x, this.y - this.height * 0.25, this.width / 4, this.height / 3.5, 0, 0, Math.PI * 2);
         ctx.clip();
 
         // отражение (переворот по вертикали)
