@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pomodoro с каплями и следом</title>
+  <title>Pomodoro с длинными следами</title>
   <style>
     html, body {
       margin: 0;
@@ -135,8 +135,8 @@
         this.y = -40;
         this.width = 12 + Math.random() * 6;
         this.height = this.width * 2.5;
-        this.speed = 0.4 + Math.random() * 0.5; // очень медленно
-        this.angle = Math.random() * Math.PI * 2; // для покачивания
+        this.speed = 0.2 + Math.random() * 0.3; // очень медленно
+        this.angle = Math.random() * Math.PI * 2;
         this.wobbleSpeed = 0.02 + Math.random() * 0.02;
         this.wobbleRange = 4 + Math.random() * 3;
       }
@@ -181,9 +181,9 @@
         this.x = x;
         this.y = y;
         this.width = width;
-        this.height = height * 1.5;
-        this.alpha = 0.4;
-        this.fadeSpeed = 0.002; // исчезает медленно
+        this.height = height * 5; // очень длинный след
+        this.alpha = 0.5;
+        this.fadeSpeed = 0.0008; // исчезает очень медленно
       }
       update() {
         this.alpha -= this.fadeSpeed;
@@ -199,7 +199,7 @@
 
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.scale(1.1, -1.1); // лёгкое увеличение фона
+        ctx.scale(1.1, -1.1);
         ctx.drawImage(
           offscreen,
           this.x - this.width / 2,
@@ -232,7 +232,6 @@
         t.draw();
       });
 
-      // Удаляем старые следы
       for (let i = trails.length - 1; i >= 0; i--) {
         if (trails[i].alpha <= 0) trails.splice(i, 1);
       }
