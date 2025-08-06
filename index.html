@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pomodoro с объёмными каплями</title>
+  <title>Pomodoro с длинным следом капель</title>
   <style>
     html, body {
       margin: 0;
@@ -112,8 +112,22 @@
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
+      trailCanvas.width = canvas.width;
+      trailCanvas.height = canvas.height;
     }
     window.addEventListener('resize', resizeCanvas);
+
+    // Отдельный слой для следов
+    const trailCanvas = document.createElement('canvas');
+    const trailCtx = trailCanvas.getContext('2d');
+    document.body.appendChild(trailCanvas);
+    trailCanvas.style.position = 'fixed';
+    trailCanvas.style.top = '0';
+    trailCanvas.style.left = '0';
+    trailCanvas.style.width = '100%';
+    trailCanvas.style.height = '100%';
+    trailCanvas.style.zIndex = '-1';
+
     resizeCanvas();
 
     const offscreen = document.createElement('canvas');
@@ -134,24 +148,19 @@
         this.width = 16 + Math.random() * 8;
         this.height = this.width * 2.8;
         this.speed = 0.3 + Math.random() * 0.2;
-        this.trailLength = this.height * 8;
       }
       update() {
         this.y += this.speed;
         if (this.y - this.height > canvas.height) this.reset();
       }
-      draw() {
-        // След (размытый)
-        ctx.save();
-        const trailGrad = ctx.createLinearGradient(this.x, this.y - this.trailLength, this.x, this.y);
-        trailGrad.addColorStop(0, 'rgba(255,255,255,0)');
-        trailGrad.addColorStop(0.6, 'rgba(255,255,255,0.25)');
-        trailGrad.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.fillStyle = trailGrad;
-        ctx.fillRect(this.x - this.width / 3, this.y - this.trailLength, this.width / 1.5, this.trailLength);
-        ctx.restore();
-
-        // Капля с эффектом линзы
+      drawTrail() {
+        const grad = trailCtx.createLinearGradient(this.x, 0, this.x, this.y);
+        grad.addColorStop(0, 'rgba(255,255,255,0.15)');
+        grad.addColorStop(1, 'rgba(255,255,255,0)');
+        trailCtx.fillStyle = grad;
+        trailCtx.fillRect(this.x - this.width/4, 0, this.width/2, this.y);
+      }
+      drawDrop() {
         ctx.save();
         ctx.beginPath();
         ctx.ellipse(this.x, this.y, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
@@ -159,7 +168,7 @@
 
         ctx.save();
         ctx.translate(this.x, this.y);
-        ctx.scale(1.2, -1.2); // Увеличение и переворот
+        ctx.scale(1.2, -1.2); // линза
         ctx.globalAlpha = 0.9;
         ctx.drawImage(
           offscreen,
@@ -174,7 +183,7 @@
         );
         ctx.restore();
 
-        // Добавим блик для объёма
+        // Блик
         const grad = ctx.createRadialGradient(this.x - this.width/4, this.y - this.height/4, 1, this.x, this.y, this.width);
         grad.addColorStop(0, 'rgba(255,255,255,0.9)');
         grad.addColorStop(0.5, 'rgba(255,255,255,0.3)');
@@ -182,7 +191,6 @@
         ctx.globalAlpha = 0.7;
         ctx.fillStyle = grad;
         ctx.fillRect(this.x - this.width, this.y - this.height, this.width * 2, this.height * 2);
-
         ctx.restore();
       }
     }
@@ -190,11 +198,20 @@
     const drops = Array.from({ length: 10 }, () => new Drop());
 
     function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // высыхание следов (постепенное стирание)
+      trailCtx.fillStyle = 'rgba(0,0,0,0.02)';
+      trailCtx.globalCompositeOperation = 'destination-out';
+      trailCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
+      trailCtx.globalCompositeOperation = 'source-over';
+
       drops.forEach(d => {
         d.update();
-        d.draw();
+        d.drawTrail();
       });
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drops.forEach(d => d.drawDrop());
+
       requestAnimationFrame(animate);
     }
     updateVideoFrame();
