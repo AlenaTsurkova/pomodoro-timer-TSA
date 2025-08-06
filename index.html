@@ -87,13 +87,14 @@
       backdrop-filter: blur(4px);
     }
 
-    .fade-out {
-      opacity: 0;
-      transform: scale(0.8);
-      pointer-events: none;
-    }
-
     .settings { margin-top: 15px; }
+
+    .mute-btn {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      background: rgba(0,0,0,0.5);
+    }
   </style>
 </head>
 <body>
@@ -133,14 +134,16 @@
     <div class="timer" id="timer">25:00</div>
 
     <div>
-      <button id="enableSound">Включить звук</button>
       <button id="startBtn">Старт</button>
       <button id="resetBtn">Сброс</button>
     </div>
   </div>
 
+  <!-- Кнопка выключения звука -->
+  <button class="mute-btn" id="muteBtn">Mute</button>
+
   <!-- Звук дождя -->
-  <audio id="rain">
+  <audio id="rain" autoplay loop>
     <source src="rain_sound.mp3" type="audio/mpeg">
   </audio>
 
@@ -150,39 +153,7 @@
     let isWork = true;
     let timer;
     let remaining = workDuration;
-    let soundEnabled = false;
-  
-    window.addEventListener('DOMContentLoaded', () => {
-      const rain = document.getElementById('rain');
-  
-      // Цикличное воспроизведение звука
-      rain.addEventListener('ended', () => {
-        rain.currentTime = 0;
-        rain.play();
-      });
-  
-      const enableSoundBtn = document.getElementById('enableSound');
-      enableSoundBtn.addEventListener('click', () => {
-        soundEnabled = true;
-        rain.play();
-  
-        enableSoundBtn.classList.add('fade-out');
-        setTimeout(() => {
-          enableSoundBtn.style.display = 'none';
-        }, 500);
-      });
-  
-      // ... (остальной код таймера и анимации дождя без изменений)
-    });
-  </script>
-
-  <script>
-    let workDuration = 25 * 60;
-    let breakDuration = 5 * 60;
-    let isWork = true;
-    let timer;
-    let remaining = workDuration;
-    let soundEnabled = false;
+    let isMuted = false;
 
     window.addEventListener('DOMContentLoaded', () => {
       const container = document.getElementById('appContainer');
@@ -192,7 +163,7 @@
       const rain = document.getElementById('rain');
       const workSelect = document.getElementById('workSelect');
       const breakSelect = document.getElementById('breakSelect');
-      const enableSoundBtn = document.getElementById('enableSound');
+      const muteBtn = document.getElementById('muteBtn');
 
       function updateDisplay() {
         let minutes = Math.floor(remaining / 60).toString().padStart(2, '0');
@@ -201,14 +172,12 @@
       }
 
       function playSound() {
-        if (soundEnabled) rain.play();
+        if (!isMuted) rain.play();
       }
 
       function stopSound() {
-        if (soundEnabled) {
-          rain.pause();
-          rain.currentTime = 0;
-        }
+        rain.pause();
+        rain.currentTime = 0;
       }
 
       function toggleMode() {
@@ -239,16 +208,6 @@
         stopSound();
       }
 
-      enableSoundBtn.addEventListener('click', () => {
-        soundEnabled = true;
-        rain.play();
-
-        enableSoundBtn.classList.add('fade-out');
-        setTimeout(() => {
-          enableSoundBtn.style.display = 'none';
-        }, 500);
-      });
-
       document.getElementById('startBtn').addEventListener('click', () => startPomodoro());
       document.getElementById('resetBtn').addEventListener('click', () => resetTimer());
 
@@ -260,6 +219,17 @@
 
       breakSelect.addEventListener('change', () => {
         breakDuration = parseInt(breakSelect.value) * 60;
+      });
+
+      muteBtn.addEventListener('click', () => {
+        isMuted = !isMuted;
+        if (isMuted) {
+          rain.pause();
+          muteBtn.textContent = 'Unmute';
+        } else {
+          rain.play();
+          muteBtn.textContent = 'Mute';
+        }
       });
 
       updateDisplay();
@@ -313,4 +283,3 @@
   </script>
 </body>
 </html>
-
