@@ -106,7 +106,6 @@
       <button id="resetBtn">Сброс</button>
     </div>
 
-    <!-- Регулировка громкости -->
     <div class="volume-control">
       <label for="volumeRange">Громкость:</label>
       <input type="range" id="volumeRange" min="0" max="1" step="0.01" value="0.5">
@@ -138,7 +137,7 @@
       update() {
         this.y += this.speed;
         this.trail.push({ x: this.x, y: this.y });
-        if (this.trail.length > 200) this.trail.shift();
+        if (this.trail.length > 250) this.trail.shift(); // длинный след
 
         if (this.y - this.radius > canvas.height) {
           this.finishedTrails.push({ points: [...this.trail], alpha: 1 });
@@ -147,15 +146,18 @@
           this.trail = [];
         }
 
-        this.finishedTrails.forEach(t => t.alpha -= 0.001);
+        // медленное исчезновение следов
+        this.finishedTrails.forEach(t => t.alpha -= 0.0008);
         this.finishedTrails = this.finishedTrails.filter(t => t.alpha > 0);
       }
 
       drawLens(x, y, size, zoom) {
         ctx.save();
         ctx.beginPath();
-        ctx.arc(x, y, size, 0, Math.PI * 2);
+        ctx.ellipse(x, y, size * 1.1, size * 1.5, 0, 0, Math.PI * 2); // слегка вытянутая капля
         ctx.clip();
+
+        // увеличенный участок фона
         ctx.drawImage(
           bgVideo,
           x - size / zoom,
@@ -167,16 +169,26 @@
           size * 2,
           size * 2
         );
+
+        // добавление блика для объема
+        const grad = ctx.createRadialGradient(x - size / 3, y - size / 3, size * 0.1, x, y, size);
+        grad.addColorStop(0, 'rgba(255,255,255,0.4)');
+        grad.addColorStop(0.6, 'rgba(255,255,255,0)');
+        ctx.fillStyle = grad;
+        ctx.globalCompositeOperation = 'lighter';
+        ctx.fillRect(x - size, y - size, size * 2, size * 2);
+
         ctx.restore();
+        ctx.globalCompositeOperation = 'source-over';
       }
 
       drawTrail(points, alphaScale) {
         for (let i = 0; i < points.length; i++) {
           const p = points[i];
           const progress = (i + 1) / points.length;
-          const size = this.radius * (0.3 + progress * 0.8);
-          const zoom = 1.2; // сильное увеличение
-          ctx.globalAlpha = alphaScale * progress;
+          const size = this.radius * (0.4 + progress); // увеличивающийся след
+          const zoom = 1.2;
+          ctx.globalAlpha = alphaScale * progress * 0.8;
           this.drawLens(p.x, p.y, size, zoom);
           ctx.globalAlpha = 1;
         }
@@ -184,14 +196,14 @@
 
       draw() {
         this.finishedTrails.forEach(t => this.drawTrail(t.points, t.alpha));
-        this.drawTrail(this.trail, 0.7);
+        this.drawTrail(this.trail, 0.8);
         this.drawLens(this.x, this.y, this.radius * 1.4, 1.2);
       }
     }
 
     let drops = [];
-    for (let i = 0; i < 12; i++) {
-      drops.push(new Drop(Math.random() * canvas.width, Math.random() * canvas.height, 10 + Math.random() * 15, 0.5 + Math.random() * 0.7));
+    for (let i = 0; i < 10; i++) {
+      drops.push(new Drop(Math.random() * canvas.width, Math.random() * canvas.height, 12 + Math.random() * 10, 0.4 + Math.random() * 0.6));
     }
 
     function animate() {
