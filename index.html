@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pomodoro с длинным следом капель</title>
+  <title>Pomodoro с каплями в форме слезы</title>
   <style>
     html, body {
       margin: 0;
@@ -117,7 +117,7 @@
     }
     window.addEventListener('resize', resizeCanvas);
 
-    // Отдельный слой для следов
+    // Слой для следов
     const trailCanvas = document.createElement('canvas');
     const trailCtx = trailCanvas.getContext('2d');
     document.body.appendChild(trailCanvas);
@@ -140,14 +140,30 @@
     }
     setInterval(updateVideoFrame, 500);
 
+    function drawTeardropPath(ctx, x, y, width, height) {
+      ctx.beginPath();
+      ctx.moveTo(x, y - height / 2); // верхняя остринка
+      ctx.bezierCurveTo(
+        x + width / 2, y - height / 4,  // верхний изгиб справа
+        x + width / 2, y + height / 2,  // нижний изгиб справа
+        x, y + height / 2               // нижняя точка
+      );
+      ctx.bezierCurveTo(
+        x - width / 2, y + height / 2,  // нижний изгиб слева
+        x - width / 2, y - height / 4,  // верхний изгиб слева
+        x, y - height / 2               // замыкаем наверху
+      );
+      ctx.closePath();
+    }
+
     class Drop {
       constructor() { this.reset(); }
       reset() {
         this.x = Math.random() * canvas.width;
         this.y = -50;
-        this.width = 16 + Math.random() * 8;
+        this.width = 18 + Math.random() * 6;
         this.height = this.width * 2.8;
-        this.speed = 0.3 + Math.random() * 0.2;
+        this.speed = 0.25 + Math.random() * 0.15;
       }
       update() {
         this.y += this.speed;
@@ -162,8 +178,7 @@
       }
       drawDrop() {
         ctx.save();
-        ctx.beginPath();
-        ctx.ellipse(this.x, this.y, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
+        drawTeardropPath(ctx, this.x, this.y, this.width, this.height);
         ctx.clip();
 
         ctx.save();
@@ -198,7 +213,7 @@
     const drops = Array.from({ length: 10 }, () => new Drop());
 
     function animate() {
-      // высыхание следов (постепенное стирание)
+      // высыхание следов
       trailCtx.fillStyle = 'rgba(0,0,0,0.02)';
       trailCtx.globalCompositeOperation = 'destination-out';
       trailCtx.fillRect(0, 0, trailCanvas.width, trailCanvas.height);
