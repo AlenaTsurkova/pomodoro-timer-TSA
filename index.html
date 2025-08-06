@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pomodoro с каплями</title>
+  <title>Pomodoro с реалистичными каплями</title>
   <style>
     html, body {
       margin: 0;
@@ -13,7 +13,6 @@
       font-family: Arial, sans-serif;
       color: #fff;
     }
-
     #bg-video {
       position: fixed;
       top: 0;
@@ -23,7 +22,6 @@
       object-fit: cover;
       z-index: -3;
     }
-
     #rainCanvas {
       position: fixed;
       top: 0;
@@ -32,7 +30,6 @@
       height: 100%;
       z-index: -1;
     }
-
     .overlay {
       position: fixed;
       top: 0;
@@ -42,7 +39,6 @@
       background: rgba(0,0,0,0.3);
       z-index: -2;
     }
-
     .container {
       position: relative;
       z-index: 10;
@@ -53,12 +49,10 @@
       height: 100%;
       text-align: center;
     }
-
     .timer {
       font-size: 4em;
       margin: 20px 0;
     }
-
     button, select, input[type="range"] {
       margin: 5px;
       padding: 10px 20px;
@@ -67,7 +61,6 @@
       border-radius: 6px;
       cursor: pointer;
     }
-
     .volume-control {
       display: flex;
       align-items: center;
@@ -105,7 +98,6 @@
       <button id="startBtn">Старт</button>
       <button id="resetBtn">Сброс</button>
     </div>
-
     <div class="volume-control">
       <label for="volumeRange">Громкость:</label>
       <input type="range" id="volumeRange" min="0" max="1" step="0.01" value="0.5">
@@ -124,53 +116,64 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas();
 
+    // Отдельный холст для хранения одного кадра видео
+    const offscreen = document.createElement('canvas');
+    const offCtx = offscreen.getContext('2d');
+
     class Drop {
-      constructor() {
-        this.reset();
-      }
+      constructor() { this.reset(); }
       reset() {
         this.x = Math.random() * canvas.width;
         this.y = -20;
-        this.radius = 10 + Math.random() * 8;
-        this.speed = 1 + Math.random() * 1.5;
+        this.radius = 8 + Math.random() * 6;
+        this.speed = 2 + Math.random() * 1.5;
       }
       update() {
         this.y += this.speed;
         if (this.y - this.radius > canvas.height) this.reset();
       }
       draw() {
-        // увеличенный фон
         ctx.save();
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.clip();
+
+        // Рисуем перевёрнутый фрагмент из offscreen
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        ctx.scale(1, -1);
         ctx.drawImage(
-          bgVideo,
-          this.x - this.radius / 1.2,
-          this.y - this.radius / 1.2,
-          this.radius * 2 / 1.2,
-          this.radius * 2 / 1.2,
+          offscreen,
           this.x - this.radius,
-          this.y - this.radius,
+          canvas.height - this.y - this.radius,
+          this.radius * 2,
+          this.radius * 2,
+          -this.radius,
+          -this.radius,
           this.radius * 2,
           this.radius * 2
         );
         ctx.restore();
 
-        // объёмный блик
+        // Блик
         const grad = ctx.createRadialGradient(this.x - this.radius / 3, this.y - this.radius / 3, this.radius * 0.1, this.x, this.y, this.radius);
         grad.addColorStop(0, 'rgba(255,255,255,0.5)');
-        grad.addColorStop(0.5, 'rgba(255,255,255,0)');
+        grad.addColorStop(0.6, 'rgba(255,255,255,0)');
         ctx.fillStyle = grad;
-        ctx.beginPath();
-        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.fillRect(this.x - this.radius, this.y - this.radius, this.radius * 2, this.radius * 2);
+
+        ctx.restore();
       }
     }
 
-    const drops = Array.from({ length: 15 }, () => new Drop());
+    const drops = Array.from({ length: 10 }, () => new Drop());
 
     function animate() {
+      // Рисуем один кадр видео на offscreen
+      offscreen.width = canvas.width;
+      offscreen.height = canvas.height;
+      offCtx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
+
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drops.forEach(d => {
         d.update();
