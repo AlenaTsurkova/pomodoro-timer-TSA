@@ -44,6 +44,11 @@
       pointer-events: none;
     }
 
+    .ui-layer {
+      position: relative;
+      z-index: 10;
+    }
+
     .container {
       display: flex;
       flex-direction: column;
@@ -73,28 +78,28 @@
       border: none;
       border-radius: 6px;
       cursor: pointer;
-      transition: opacity 0.5s ease, transform 0.5s ease;
-    }
-    button {
-      background: rgba(50, 50, 50, 0.7);
-      color: white;
       backdrop-filter: blur(4px);
     }
-    button:hover { background: rgba(80, 80, 80, 0.8); }
+
+    button {
+      background: rgba(50, 50, 50, 0.6);
+      color: white;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+      transition: background 0.3s, box-shadow 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+      background: rgba(80, 80, 80, 0.8);
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.6);
+      transform: scale(1.05);
+    }
+
     select {
       background: rgba(50, 50, 50, 0.7);
       color: #fff;
-      backdrop-filter: blur(4px);
     }
 
     .settings { margin-top: 15px; }
-
-    .mute-btn {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      background: rgba(0,0,0,0.5);
-    }
   </style>
 </head>
 <body>
@@ -109,38 +114,38 @@
   <canvas id="rainCanvas"></canvas>
 
   <!-- Интерфейс -->
-  <div class="container" id="appContainer">
-    <h1>Pomodoro Таймер</h1>
+  <div class="ui-layer">
+    <div class="container" id="appContainer">
+      <h1>Pomodoro Таймер</h1>
 
-    <div class="settings">
-      <label>
-        Время работы:
-        <select id="workSelect">
-          <option value="15">15 мин</option>
-          <option value="25" selected>25 мин</option>
-          <option value="50">50 мин</option>
-        </select>
-      </label>
-      <label>
-        Отдых:
-        <select id="breakSelect">
-          <option value="5" selected>5 мин</option>
-          <option value="10">10 мин</option>
-          <option value="15">15 мин</option>
-        </select>
-      </label>
-    </div>
+      <div class="settings">
+        <label>
+          Время работы:
+          <select id="workSelect">
+            <option value="15">15 мин</option>
+            <option value="25" selected>25 мин</option>
+            <option value="50">50 мин</option>
+          </select>
+        </label>
+        <label>
+          Отдых:
+          <select id="breakSelect">
+            <option value="5" selected>5 мин</option>
+            <option value="10">10 мин</option>
+            <option value="15">15 мин</option>
+          </select>
+        </label>
+      </div>
 
-    <div class="timer" id="timer">25:00</div>
+      <div class="timer" id="timer">25:00</div>
 
-    <div>
-      <button id="startBtn">Старт</button>
-      <button id="resetBtn">Сброс</button>
+      <div>
+        <button id="startBtn">Старт</button>
+        <button id="resetBtn">Сброс</button>
+        <button id="muteBtn">Mute</button>
+      </div>
     </div>
   </div>
-
-  <!-- Кнопка выключения звука -->
-  <button class="mute-btn" id="muteBtn">Mute</button>
 
   <!-- Звук дождя -->
   <audio id="rain" autoplay loop>
