@@ -257,29 +257,41 @@
           this.speed = speed;
           this.offset = Math.random() * Math.PI * 2;
           this.trail = [];
+          this.finishedTrails = []; // следы, которые остаются после ухода капли
         }
       
         update() {
           this.y += this.speed;
-          this.x += Math.sin(this.offset + this.y / 80) * 0.4;
+          this.x += Math.sin(this.offset + this.y / 100) * 0.3;
+      
           this.trail.push({ x: this.x, y: this.y });
-          if (this.trail.length > 50) this.trail.shift();
+          if (this.trail.length > 120) this.trail.shift();
+      
           if (this.y - this.radius > canvas.height) {
+            // Сохраняем текущий след как "застывший"
+            this.finishedTrails.push({
+              points: [...this.trail],
+              alpha: 0.3 // начальная прозрачность для следа
+            });
+            // Сбрасываем каплю наверх
             this.y = -this.radius;
             this.x = Math.random() * canvas.width;
             this.trail = [];
           }
+      
+          // Постепенно уменьшаем прозрачность старых следов
+          this.finishedTrails.forEach(t => t.alpha -= 0.002);
+          this.finishedTrails = this.finishedTrails.filter(t => t.alpha > 0);
         }
       
-        draw() {
-          // след
-          for (let i = 0; i < this.trail.length; i++) {
-            const point = this.trail[i];
-            const alpha = (i + 1) / this.trail.length * 0.4; // более заметный
-            const width = this.radius * (0.2 + (i / this.trail.length) * 0.8); // утолщение книзу
+        drawTrail(points, alphaScale) {
+          for (let i = 0; i < points.length; i++) {
+            const point = points[i];
+            const progress = (i + 1) / points.length;
+            const alpha = progress * alphaScale;
+            const width = this.radius * (0.1 + progress * 0.7);
       
-            // градиент для мягких краёв
-            const gradient = ctx.createLinearGradient(point.x - width / 2, point.y, point.x + width / 2, point.y);
+            const gradient = ctx.createLinearGradient(point.x - width, point.y, point.x + width, point.y);
             gradient.addColorStop(0, `rgba(180,200,255,0)`);
             gradient.addColorStop(0.5, `rgba(180,200,255,${alpha})`);
             gradient.addColorStop(1, `rgba(180,200,255,0)`);
@@ -288,20 +300,33 @@
             ctx.lineWidth = width;
             ctx.beginPath();
             ctx.moveTo(point.x, point.y);
-            ctx.lineTo(point.x, point.y + this.radius * 0.8);
+            ctx.lineTo(point.x, point.y + this.radius * 1.2);
             ctx.stroke();
           }
+        }
       
-          // капля
-          const gradient = ctx.createRadialGradient(this.x, this.y, this.radius * 0.2, this.x, this.y, this.radius);
-          gradient.addColorStop(0, 'rgba(200, 220, 255, 0.8)');
-          gradient.addColorStop(1, 'rgba(200, 220, 255, 0)');
-          ctx.fillStyle = gradient;
+        draw() {
+          // Рисуем "застывшие" следы
+          this.finishedTrails.forEach(t => this.drawTrail(t.points, t.alpha));
+      
+          // Рисуем активный след
+          this.drawTrail(this.trail, 0.25);
+      
+          // Капля (эллипс)
+          ctx.save();
+          ctx.translate(this.x, this.y);
+          ctx.scale(1, 1.5);
+          const grad = ctx.createRadialGradient(0, 0, this.radius * 0.2, 0, 0, this.radius);
+          grad.addColorStop(0, 'rgba(200, 220, 255, 0.9)');
+          grad.addColorStop(1, 'rgba(200, 220, 255, 0)');
+          ctx.fillStyle = grad;
           ctx.beginPath();
-          ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+          ctx.arc(0, 0, this.radius, 0, Math.PI * 2);
           ctx.fill();
+          ctx.restore();
         }
       }
+
 
 
       let bigDrops = [];
@@ -327,5 +352,6 @@
   </script>
 </body>
 </html>
+
 
 
