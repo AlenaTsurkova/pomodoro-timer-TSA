@@ -125,86 +125,50 @@
     resizeCanvas();
 
     class Drop {
-      constructor(x, y, radius, speed) {
-        this.x = x;
-        this.y = y;
-        this.radius = radius;
-        this.speed = speed;
-        this.trail = [];
-        this.finishedTrails = [];
+      constructor() {
+        this.reset();
       }
-
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = -20;
+        this.radius = 10 + Math.random() * 8;
+        this.speed = 1 + Math.random() * 1.5;
+      }
       update() {
         this.y += this.speed;
-        this.trail.push({ x: this.x, y: this.y });
-        if (this.trail.length > 250) this.trail.shift(); // длинный след
-
-        if (this.y - this.radius > canvas.height) {
-          this.finishedTrails.push({ points: [...this.trail], alpha: 1 });
-          this.y = -this.radius;
-          this.x = Math.random() * canvas.width;
-          this.trail = [];
-        }
-
-        // медленное исчезновение следов
-        this.finishedTrails.forEach(t => t.alpha -= 0.0008);
-        this.finishedTrails = this.finishedTrails.filter(t => t.alpha > 0);
+        if (this.y - this.radius > canvas.height) this.reset();
       }
-
-      drawLens(x, y, size, zoom) {
+      draw() {
+        // увеличенный фон
         ctx.save();
         ctx.beginPath();
-        ctx.ellipse(x, y, size * 1.1, size * 1.5, 0, 0, Math.PI * 2); // слегка вытянутая капля
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
         ctx.clip();
-
-        // увеличенный участок фона
         ctx.drawImage(
           bgVideo,
-          x - size / zoom,
-          y - size / zoom,
-          size * 2 / zoom,
-          size * 2 / zoom,
-          x - size,
-          y - size,
-          size * 2,
-          size * 2
+          this.x - this.radius / 1.2,
+          this.y - this.radius / 1.2,
+          this.radius * 2 / 1.2,
+          this.radius * 2 / 1.2,
+          this.x - this.radius,
+          this.y - this.radius,
+          this.radius * 2,
+          this.radius * 2
         );
-
-        // добавление блика для объема
-        const grad = ctx.createRadialGradient(x - size / 3, y - size / 3, size * 0.1, x, y, size);
-        grad.addColorStop(0, 'rgba(255,255,255,0.4)');
-        grad.addColorStop(0.6, 'rgba(255,255,255,0)');
-        ctx.fillStyle = grad;
-        ctx.globalCompositeOperation = 'lighter';
-        ctx.fillRect(x - size, y - size, size * 2, size * 2);
-
         ctx.restore();
-        ctx.globalCompositeOperation = 'source-over';
-      }
 
-      drawTrail(points, alphaScale) {
-        for (let i = 0; i < points.length; i++) {
-          const p = points[i];
-          const progress = (i + 1) / points.length;
-          const size = this.radius * (0.4 + progress); // увеличивающийся след
-          const zoom = 1.2;
-          ctx.globalAlpha = alphaScale * progress * 0.8;
-          this.drawLens(p.x, p.y, size, zoom);
-          ctx.globalAlpha = 1;
-        }
-      }
-
-      draw() {
-        this.finishedTrails.forEach(t => this.drawTrail(t.points, t.alpha));
-        this.drawTrail(this.trail, 0.8);
-        this.drawLens(this.x, this.y, this.radius * 1.4, 1.2);
+        // объёмный блик
+        const grad = ctx.createRadialGradient(this.x - this.radius / 3, this.y - this.radius / 3, this.radius * 0.1, this.x, this.y, this.radius);
+        grad.addColorStop(0, 'rgba(255,255,255,0.5)');
+        grad.addColorStop(0.5, 'rgba(255,255,255,0)');
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fill();
       }
     }
 
-    let drops = [];
-    for (let i = 0; i < 10; i++) {
-      drops.push(new Drop(Math.random() * canvas.width, Math.random() * canvas.height, 12 + Math.random() * 10, 0.4 + Math.random() * 0.6));
-    }
+    const drops = Array.from({ length: 15 }, () => new Drop());
 
     function animate() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -272,7 +236,6 @@
       }, { once: true });
     });
 
-    // ---- Регулировка громкости ----
     document.getElementById('volumeRange').addEventListener('input', e => {
       rainSound.volume = e.target.value;
     });
