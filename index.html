@@ -260,9 +260,9 @@
         }
         update() {
           this.y += this.speed;
-          this.x += Math.sin(this.offset + this.y / 80) * 0.3;
+          this.x += Math.sin(this.offset + this.y / 80) * 0.4;
           this.trail.push({ x: this.x, y: this.y });
-          if (this.trail.length > 30) this.trail.shift();
+          if (this.trail.length > 40) this.trail.shift();
           if (this.y - this.radius > canvas.height) {
             this.y = -this.radius;
             this.x = Math.random() * canvas.width;
@@ -270,20 +270,20 @@
           }
         }
         draw() {
-          // след
+          // Прорисовка водяного следа
           for (let i = 0; i < this.trail.length; i++) {
             const point = this.trail[i];
-            const alpha = (i + 1) / this.trail.length * 0.1;
+            const alpha = (i + 1) / this.trail.length * 0.3; // больше прозрачности
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(200, 220, 255, ${alpha})`;
-            ctx.lineWidth = this.radius * 0.3;
+            ctx.strokeStyle = `rgba(180, 200, 255, ${alpha})`;
+            ctx.lineWidth = this.radius * 0.5; // шире линия
             ctx.moveTo(point.x, point.y);
-            ctx.lineTo(point.x, point.y + this.radius * 0.4);
+            ctx.lineTo(point.x, point.y + this.radius); // длиннее штрихи
             ctx.stroke();
           }
-          // капля
+          // Капля
           const gradient = ctx.createRadialGradient(this.x, this.y, this.radius * 0.2, this.x, this.y, this.radius);
-          gradient.addColorStop(0, 'rgba(200, 220, 255, 0.6)');
+          gradient.addColorStop(0, 'rgba(200, 220, 255, 0.8)');
           gradient.addColorStop(1, 'rgba(200, 220, 255, 0)');
           ctx.fillStyle = gradient;
           ctx.beginPath();
@@ -315,3 +315,4 @@
   </script>
 </body>
 </html>
+
