@@ -2,14 +2,14 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Pomodoro с видео и звуком</title>
+<title>Pomodoro Lo-Fi</title>
 <style>
     body, html {
         margin: 0;
         padding: 0;
         height: 100%;
         overflow: hidden;
-        font-family: Arial, sans-serif;
+        font-family: 'Segoe UI', Arial, sans-serif;
         color: white;
         text-align: center;
     }
@@ -27,17 +27,67 @@
         top: 20px;
         left: 50%;
         transform: translateX(-50%);
-        background: rgba(0,0,0,0.6);
-        padding: 15px;
-        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.4);
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.6);
+        backdrop-filter: blur(8px);
     }
     select, button, input[type="range"] {
-        margin: 5px;
-        padding: 5px;
+        margin: 8px;
+        padding: 10px 15px;
+        border-radius: 12px;
+        border: 2px solid rgba(255,255,255,0.3);
+        font-size: 14px;
+        background: transparent;
+        color: white;
+        text-shadow: 0 0 5px rgba(255,255,255,0.6);
+        transition: all 0.3s ease;
+        box-shadow: 0 0 10px rgba(0,255,255,0.3);
+    }
+    select:hover, button:hover {
+        border-color: cyan;
+        box-shadow: 0 0 20px rgba(0,255,255,0.8);
+        transform: translateY(-2px);
+    }
+    button {
+        background: rgba(0,255,255,0.05);
+        cursor: pointer;
+        font-weight: bold;
+    }
+    button:active {
+        transform: scale(0.95);
+        box-shadow: 0 0 15px rgba(0,255,255,0.6);
+    }
+    input[type="range"] {
+        width: 100px;
+        -webkit-appearance: none;
+        background: transparent;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: cyan;
+        box-shadow: 0 0 10px cyan;
+        cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-runnable-track {
+        height: 4px;
+        background: rgba(255,255,255,0.3);
+        border-radius: 2px;
     }
     #timer {
-        font-size: 2em;
-        margin-top: 10px;
+        font-size: 2.5em;
+        margin-top: 12px;
+        font-weight: bold;
+        text-shadow: 0 0 15px cyan;
+        animation: glow 2s infinite alternate;
+    }
+    @keyframes glow {
+        from { text-shadow: 0 0 10px cyan, 0 0 20px cyan; }
+        to { text-shadow: 0 0 20px cyan, 0 0 30px cyan; }
     }
 </style>
 </head>
@@ -66,8 +116,8 @@
         </label>
     </div>
     <div>
-        <button id="startBtn">Старт</button>
-        <button id="resetBtn">Сброс</button>
+        <button id="startBtn">▶ Старт</button>
+        <button id="resetBtn">⏹ Сброс</button>
     </div>
     <div>
         <label>Громкость:
