@@ -2,220 +2,179 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Pomodoro Lo-Fi</title>
+<title>Rainy forest Lo-Fi</title>
 <style>
-    body, html {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        overflow: hidden;
-        font-family: 'Segoe UI', Arial, sans-serif;
-        color: white;
-    }
-    video {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        z-index: -1;
-    }
-    /* Таймер слева снизу */
-    .controls {
-        position: fixed;
-        bottom: 20px;
-        left: 20px;
-        background: rgba(0, 0, 0, 0.4);
-        padding: 20px;
-        border-radius: 15px;
-        box-shadow: 0 0 20px rgba(0,255,255,0.6);
-        backdrop-filter: blur(8px);
-    }
-    select, button, input[type="range"] {
-        margin: 8px;
-        padding: 10px 15px;
-        border-radius: 12px;
-        border: 2px solid rgba(0,255,255,0.6);
-        font-size: 14px;
-        background: rgba(0,255,255,0.05);
-        color: white;
-        text-shadow: 0 0 5px rgba(255,255,255,0.6);
-        transition: all 0.3s ease;
-        box-shadow: 0 0 10px rgba(0,255,255,0.4);
-    }
-    select option {
-        background: #000;
-        color: cyan;
-        padding: 8px;
-    }
-    select:hover, button:hover {
-        border-color: cyan;
-        box-shadow: 0 0 20px rgba(0,255,255,0.8);
-        transform: translateY(-2px);
-    }
-    button {
-        cursor: pointer;
-        font-weight: bold;
-    }
-    button:active {
-        transform: scale(0.95);
-        box-shadow: 0 0 15px rgba(0,255,255,0.6);
-    }
-    input[type="range"] {
-        width: 100px;
-        -webkit-appearance: none;
-        background: transparent;
-    }
-    input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        width: 14px;
-        height: 14px;
-        border-radius: 50%;
-        background: cyan;
-        box-shadow: 0 0 10px cyan;
-        cursor: pointer;
-    }
-    input[type="range"]::-webkit-slider-runnable-track {
-        height: 4px;
-        background: rgba(255,255,255,0.3);
-        border-radius: 2px;
-    }
-    #timer {
-        font-size: 2.5em;
-        margin-top: 12px;
-        font-weight: bold;
-        text-shadow: 0 0 15px cyan;
-        animation: glow 2s infinite alternate;
-    }
-    @keyframes glow {
-        from { text-shadow: 0 0 10px cyan, 0 0 20px cyan; }
-        to { text-shadow: 0 0 20px cyan, 0 0 30px cyan; }
-    }
-    /* Радио вверху справа */
-    .radio-container {
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(0,0,0,0.4);
-        padding: 10px 15px;
-        border-radius: 12px;
-        backdrop-filter: blur(8px);
-        box-shadow: 0 0 20px rgba(0,255,255,0.6);
-    }
-    .RP-LINK {
-        display: inline-block;
-        padding: 8px 15px;
-        color: cyan;
-        font-weight: bold;
-        text-decoration: none;
-        border: 2px solid rgba(0,255,255,0.6);
-        border-radius: 10px;
-        background: rgba(0,255,255,0.05);
-        text-shadow: 0 0 5px rgba(255,255,255,0.6);
-        box-shadow: 0 0 10px rgba(0,255,255,0.4);
-        transition: all 0.3s ease;
-    }
-    .RP-LINK:hover {
-        border-color: cyan;
-        box-shadow: 0 0 20px rgba(0,255,255,0.8);
-        transform: translateY(-2px);
-    }
+  body, html {
+    margin: 0; padding: 0; height: 100%; overflow: hidden;
+    font-family: 'Segoe UI', Arial, sans-serif; color: white;
+  }
+  video {
+    position: fixed; inset:0; width:100%; height:100%; object-fit:cover; z-index:-1;
+  }
+  /* Таймер внизу слева */
+  .controls {
+    position: fixed; bottom:20px; left:20px;
+    background: rgba(0,0,0,0.4); padding:15px;
+    border-radius:15px; backdrop-filter:blur(8px);
+    box-shadow: 0 0 20px rgba(0,255,255,0.6);
+  }
+  select, button, input[type="range"] {
+    margin:6px; padding:8px 14px; border-radius:12px;
+    border:2px solid rgba(0,255,255,0.6); font-size:14px;
+    background: rgba(0,255,255,0.05); color:white;
+    text-shadow: 0 0 5px rgba(255,255,255,0.6);
+    transition: all .3s ease;
+    box-shadow: 0 0 10px rgba(0,255,255,0.4);
+    cursor: pointer;
+  }
+  select option { background: black; color: cyan; padding:8px; }
+  select:hover, button:hover {
+    border-color: cyan; box-shadow: 0 0 20px cyan; transform: translateY(-2px);
+  }
+  button:active { transform: scale(.95); }
+  input[type="range"] {
+    width:100px; appearance:none; background:transparent;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    appearance:none; width:14px; height:14px; border-radius:50%;
+    background: cyan; box-shadow: 0 0 10px cyan; cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height:4px; background: rgba(255,255,255,0.3); border-radius:2px;
+  }
+  #timer {
+    font-size:2em; margin-top:10px; font-weight:bold;
+    text-shadow: 0 0 15px cyan;
+    animation: glow 2s infinite alternate;
+  }
+  @keyframes glow {
+    from { text-shadow: 0 0 10px cyan, 0 0 20px cyan; }
+    to { text-shadow: 0 0 20px cyan, 0 0 30px cyan; }
+  }
+  /* Радио вверху справа */
+  .radio-block {
+    position:fixed; top:20px; right:20px;
+    background: rgba(0,0,0,0.4); padding:10px 15px;
+    border-radius:15px; backdrop-filter:blur(8px);
+    box-shadow: 0 0 20px rgba(0,255,255,0.6);
+    text-align:center; width:200px;
+  }
+  .radio-btn {
+    display:inline-block; width:100%;
+    padding:8px 0; font-size:14px; font-weight:bold;
+    color:white;
+    background: rgba(0,255,255,0.05);
+    border:2px solid cyan; border-radius:12px;
+    box-shadow: 0 0 10px cyan; cursor:pointer;
+    transition: all .3s ease;
+  }
+  .radio-btn:hover {
+    box-shadow: 0 0 20px cyan; transform: translateY(-2px);
+  }
+  #trackName {
+    margin-top:8px; font-size:13px; color:cyan;
+    text-shadow: 0 0 5px cyan, 0 0 10px cyan;
+    animation: glowTrack 2s infinite alternate;
+    height:1.2em; overflow:hidden;
+  }
+  @keyframes glowTrack {
+    from { text-shadow: 0 0 8px cyan, 0 0 15px cyan; }
+    to { text-shadow: 0 0 15px cyan, 0 0 25px cyan; }
+  }
 </style>
 </head>
 <body>
 
 <video autoplay muted loop id="bgVideo">
-    <source src="background.mp4" type="video/mp4">
+  <source src="background.mp4" type="video/mp4">
 </video>
 
 <div class="controls">
-    <div>
-        <label>Работа: 
-            <select id="workDuration">
-                <option value="25">25</option>
-                <option value="30">30</option>
-                <option value="45">45</option>
-                <option value="60">60</option>
-            </select>
-        </label>
-        <label>Перерыв: 
-            <select id="breakDuration">
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="15">15</option>
-            </select>
-        </label>
-    </div>
-    <div>
-        <button id="startBtn">▶</button>
-        <button id="resetBtn">⏹</button>
-        <button id="muteBtn">🔊</button>
-    </div>
-    <div>
-        <label>Громкость:
-            <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.5">
-        </label>
-    </div>
-    <div id="timer">00:00</div>
+  <div>
+    <label>Работа:
+      <select id="workDuration">
+        <option value="25">25</option><option value="30">30</option>
+        <option value="45">45</option><option value="60">60</option>
+      </select>
+    </label>
+    <label>Перерыв:
+      <select id="breakDuration">
+        <option value="5">5</option><option value="10">10</option>
+        <option value="15">15</option>
+      </select>
+    </label>
+  </div>
+  <div>
+    <button id="startBtn">▶</button>
+    <button id="resetBtn">⏹</button>
+    <button id="muteBtn">🔊</button>
+  </div>
+  <div>
+    <label>Громкость:
+      <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.5">
+    </label>
+  </div>
+  <div id="timer">00:00</div>
 </div>
 
-<div class="radio-container">
-    <a class="RP-LINK" href="https://radiopotok.ru/lofiradio" target="_blank">🎵 LoFi Радио</a>
+<div class="radio-block">
+  <button id="radioToggle" class="radio-btn">▶ Радио</button>
+  <div id="trackName">—</div>
 </div>
-    
-<audio id="bgAudio" autoplay loop>
-    <source src="rain_sound.mp3" type="audio/mpeg">
+
+<audio id="radioStream">
+  <source src="https://radiopotok.ru/lofiradio" type="audio/mpeg">
 </audio>
+
 <script>
-    const timerDisplay = document.getElementById("timer");
-    const startBtn = document.getElementById("startBtn");
-    const resetBtn = document.getElementById("resetBtn");
-    const muteBtn = document.getElementById("muteBtn");
-    const workSelect = document.getElementById("workDuration");
-    const breakSelect = document.getElementById("breakDuration");
-    const audio = document.getElementById("bgAudio");
-    const volumeControl = document.getElementById("volumeControl");
+const timerDisplay = document.getElementById("timer");
+const startBtn = document.getElementById("startBtn"), resetBtn = document.getElementById("resetBtn");
+const muteBtn = document.getElementById("muteBtn"), workSelect = document.getElementById("workDuration");
+const breakSelect = document.getElementById("breakDuration"), radioBtn = document.getElementById("radioToggle");
+const radio = document.getElementById("radioStream"), volume = document.getElementById("volumeControl");
+const trackName = document.getElementById("trackName");
 
-    let timer;
-    let timeLeft = 0;
-    let isWorkTime = true;
-    let isMuted = false;
+let timer, timeLeft = 0, isWork=true, isMuted=false, radioPlaying=false;
 
-    function startTimer() {
-        clearInterval(timer);
-        timeLeft = (isWorkTime ? parseInt(workSelect.value) : parseInt(breakSelect.value)) * 60;
-        timer = setInterval(() => {
-            let minutes = Math.floor(timeLeft / 60);
-            let seconds = timeLeft % 60;
-            timerDisplay.textContent = 
-                String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
-            timeLeft--;
-            if (timeLeft < 0) {
-                clearInterval(timer);
-                isWorkTime = !isWorkTime;
-                startTimer();
-            }
-        }, 1000);
+function startTimer(){
+  clearInterval(timer);
+  timeLeft = (isWork ? parseInt(workSelect.value) : parseInt(breakSelect.value))*60;
+  timer = setInterval(()=>{
+    let m=Math.floor(timeLeft/60), s=timeLeft%60;
+    timerDisplay.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+    if(timeLeft-- < 0){
+      clearInterval(timer);
+      isWork=!isWork;
+      startTimer();
     }
+  },1000);
+}
 
-    startBtn.addEventListener("click", startTimer);
-    resetBtn.addEventListener("click", () => {
-        clearInterval(timer);
-        timerDisplay.textContent = "00:00";
-        isWorkTime = true;
-    });
+startBtn.onclick = startTimer;
+resetBtn.onclick = () => { clearInterval(timer); timerDisplay.textContent="00:00"; isWork=true; };
+muteBtn.onclick = () => { isMuted = !isMuted; radio.muted = isMuted; muteBtn.textContent = isMuted ? "🔇" : "🔊"; };
+volume.oninput = ()=>{ radio.volume = volume.value; };
 
-    volumeControl.addEventListener("input", (e) => {
-        audio.volume = e.target.value;
-    });
+radioBtn.onclick = () => {
+  if(radioPlaying){ radio.pause(); radioBtn.textContent="▶ Радио"; trackName.textContent="—"; }
+  else{ radio.play().catch(()=>{}); radioBtn.textContent="⏸ Радио"; fetchTitle(); }
+  radioPlaying = !radioPlaying;
+};
 
-    muteBtn.addEventListener("click", () => {
-        isMuted = !isMuted;
-        audio.muted = isMuted;
-        muteBtn.textContent = isMuted ? "🔇" : "🔊";
-    });
+function fetchTitle(){
+  fetch(radio.src, { headers: { 'Icy-MetaData': '1' } })
+    .then(res => {
+      const icyMetaInt = res.headers.get('icy-metaint');
+      if(!icyMetaInt) throw 'No icy-metaint';
+      return res.body.getReader().read().then(({value})=>{
+        const str = new TextDecoder().decode(value);
+        const match = str.match(/StreamTitle='([^']+)'/);
+        trackName.textContent = match ? match[1] : '—';
+      });
+    })
+    .catch(() => { trackName.textContent = '—'; });
+}
+
 </script>
-
 </body>
 </html>
