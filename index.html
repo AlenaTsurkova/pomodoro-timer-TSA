@@ -106,24 +106,24 @@
     <div>
         <label>Работа: 
             <select id="workDuration">
-                <option value="25">25 мин</option>
-                <option value="30">30 мин</option>
-                <option value="45">45 мин</option>
-                <option value="60">60 мин</option>
+                <option value="25">25</option>
+                <option value="30">30</option>
+                <option value="45">45</option>
+                <option value="60">60</option>
             </select>
         </label>
         <label>Перерыв: 
             <select id="breakDuration">
-                <option value="5">5 мин</option>
-                <option value="10">10 мин</option>
-                <option value="15">15 мин</option>
+                <option value="5">5</option>
+                <option value="10">10</option>
+                <option value="15">15</option>
             </select>
         </label>
     </div>
     <div>
-        <button id="startBtn">▶ Старт</button>
-        <button id="resetBtn">⏹ Сброс</button>
-        <button id="muteBtn">🔊 Звук</button>
+        <button id="startBtn">▶</button>
+        <button id="resetBtn">⏹</button>
+        <button id="muteBtn">🔊</button>
     </div>
     <div>
         <label>Громкость:
@@ -186,10 +186,11 @@
     muteBtn.addEventListener("click", () => {
         isMuted = !isMuted;
         audio.muted = isMuted;
-        muteBtn.textContent = isMuted ? "🔇 Без звука" : "🔊 Звук";
+        muteBtn.textContent = isMuted ? "🔇" : "🔊";
     });
 </script>
 
 </body>
 </html>
+
 
