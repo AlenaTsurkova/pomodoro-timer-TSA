@@ -37,13 +37,19 @@
         margin: 8px;
         padding: 10px 15px;
         border-radius: 12px;
-        border: 2px solid rgba(255,255,255,0.3);
+        border: 2px solid rgba(0,255,255,0.6);
         font-size: 14px;
-        background: transparent;
+        background: rgba(0,255,255,0.05);
         color: white;
         text-shadow: 0 0 5px rgba(255,255,255,0.6);
         transition: all 0.3s ease;
-        box-shadow: 0 0 10px rgba(0,255,255,0.3);
+        box-shadow: 0 0 10px rgba(0,255,255,0.4);
+    }
+    select option {
+        background: #000;
+        color: cyan;
+        padding: 8px;
+        border: none;
     }
     select:hover, button:hover {
         border-color: cyan;
@@ -51,7 +57,6 @@
         transform: translateY(-2px);
     }
     button {
-        background: rgba(0,255,255,0.05);
         cursor: pointer;
         font-weight: bold;
     }
@@ -118,6 +123,7 @@
     <div>
         <button id="startBtn">▶ Старт</button>
         <button id="resetBtn">⏹ Сброс</button>
+        <button id="muteBtn">🔊 Звук</button>
     </div>
     <div>
         <label>Громкость:
@@ -135,6 +141,7 @@
     const timerDisplay = document.getElementById("timer");
     const startBtn = document.getElementById("startBtn");
     const resetBtn = document.getElementById("resetBtn");
+    const muteBtn = document.getElementById("muteBtn");
     const workSelect = document.getElementById("workDuration");
     const breakSelect = document.getElementById("breakDuration");
     const audio = document.getElementById("bgAudio");
@@ -143,6 +150,7 @@
     let timer;
     let timeLeft = 0;
     let isWorkTime = true;
+    let isMuted = false;
 
     function startTimer() {
         clearInterval(timer);
@@ -170,6 +178,12 @@
 
     volumeControl.addEventListener("input", (e) => {
         audio.volume = e.target.value;
+    });
+
+    muteBtn.addEventListener("click", () => {
+        isMuted = !isMuted;
+        audio.muted = isMuted;
+        muteBtn.textContent = isMuted ? "🔇 Без звука" : "🔊 Звук";
     });
 </script>
 
