@@ -1,308 +1,127 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>LoFi Pomodoro</title>
+<meta charset="UTF-8">
+<title>Pomodoro с видео и звуком</title>
 <style>
-  :root {
-    --panel-bg: rgba(0,0,0,.45);
-    --panel-br: 12px;
-    --text: #fff;
-    --muted: #cfd8dc;
-    --accent: #81c784;
-    --danger: #ef9a9a;
-  }
-  html, body {
-    margin:0; padding:0; height:100%; overflow:hidden;
-    font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-    color: var(--text);
-    background:#000;
-  }
-  /* ФОН */
-  #bgVideo {
-    position:fixed; inset:0;
-    width:100%; height:100%;
-    object-fit:cover;
-    z-index:-1;
-  }
-
-  /* ПАНЕЛЬ УПРАВЛЕНИЯ (как раньше: снизу слева) */
-  .controls {
-    position:fixed; left:20px; bottom:20px;
-    display:flex; flex-direction:column; gap:8px;
-    background:var(--panel-bg); backdrop-filter: blur(6px);
-    padding:12px 14px; border-radius:var(--panel-br);
-    max-width:min(92vw, 520px);
-  }
-  .row {
-    display:flex; flex-wrap:wrap; gap:8px; align-items:center;
-  }
-  .grow { flex:1 1 auto; }
-  .label { font-size:12px; color:var(--muted); margin-right:6px; }
-  .pill {
-    border:1px solid rgba(255,255,255,.28);
-    background:rgba(255,255,255,.08);
-    color:#fff; border-radius:999px; padding:6px 10px;
-    font-size:14px; cursor:pointer; user-select:none;
-  }
-  .pill:hover { background:rgba(255,255,255,.18); }
-  .pill.accent { border-color:rgba(129,199,132,.6); }
-  .pill.danger { border-color:rgba(239,154,154,.6); }
-  .pill.small { font-size:13px; padding:4px 10px; }
-  .pill.toggle[aria-pressed="true"] { background:rgba(129,199,132,.22); }
-
-  input[type="number"] {
-    width:72px; padding:6px 8px; border-radius:10px;
-    border:1px solid rgba(255,255,255,.28);
-    background:rgba(255,255,255,.08); color:#fff; outline:none;
-    font-size:14px;
-  }
-  input[type="range"]{
-    width:160px;
-  }
-  #modeBadge{
-    font-weight:700; letter-spacing:.3px;
-    padding:6px 10px; border-radius:999px; font-size:13px;
-    background:rgba(129,199,132,.22); border:1px solid rgba(129,199,132,.5);
-  }
-  #modeBadge.break {
-    background:rgba(239,154,154,.18); border-color:rgba(239,154,154,.55);
-  }
-  #timeDisplay {
-    font-variant-numeric:tabular-nums;
-    font-size:24px; font-weight:800; letter-spacing:.5px;
-    padding:3px 8px;
-  }
-  .spacer { flex:1 1 auto; }
-  .hint { font-size:12px; color:var(--muted); }
+    body, html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        font-family: Arial, sans-serif;
+        color: white;
+        text-align: center;
+    }
+    video {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        z-index: -1;
+    }
+    .controls {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.6);
+        padding: 15px;
+        border-radius: 10px;
+    }
+    select, button, input[type="range"] {
+        margin: 5px;
+        padding: 5px;
+    }
+    #timer {
+        font-size: 2em;
+        margin-top: 10px;
+    }
 </style>
 </head>
 <body>
 
-<!-- ФОН-ВИДЕО -->
-<video id="bgVideo" autoplay muted loop playsinline>
-  <source src="background.mp4" type="video/mp4"/>
+<video autoplay muted loop id="bgVideo">
+    <source src="background.mp4" type="video/mp4">
 </video>
 
-<!-- Аудио (Lo-Fi поток) -->
-<audio id="lofi" preload="none">
-  <!-- Заменить на свой поток при желании -->
-  <source src="https://listen.myrh.ru/id7115" type="audio/mpeg"/>
-</audio>
-
-<!-- ПАНЕЛЬ -->
-<div class="controls" role="region" aria-label="Панель Pomodoro">
-  <!-- Ряд 1: Режим + Время + Старт/Пауза + Сброс -->
-  <div class="row">
-    <span id="modeBadge">Работа</span>
-    <div id="timeDisplay" class="grow" aria-live="polite">25:00</div>
-    <button id="startPause" class="pill accent">▶ Старт</button>
-    <button id="resetBtn" class="pill danger">⟲ Сброс</button>
-  </div>
-
-  <!-- Ряд 2: пресеты Работы + своё -->
-  <div class="row">
-    <span class="label">Работа:</span>
-    <button class="pill small preset-work" data-min="25">25 мин</button>
-    <button class="pill small preset-work" data-min="30">30 мин</button>
-    <button class="pill small preset-work" data-min="45">45 мин</button>
-    <span class="spacer"></span>
-    <span class="label">Свои (мин):</span>
-    <input id="customWork" type="number" min="1" step="1" value="25" />
-    <button id="applyWork" class="pill small">OK</button>
-  </div>
-
-  <!-- Ряд 3: пресеты Перерыва + своё -->
-  <div class="row">
-    <span class="label">Перерыв:</span>
-    <button class="pill small preset-break" data-min="5">5 мин</button>
-    <button class="pill small preset-break" data-min="10">10 мин</button>
-    <button class="pill small preset-break" data-min="15">15 мин</button>
-    <span class="spacer"></span>
-    <span class="label">Свои (мин):</span>
-    <input id="customBreak" type="number" min="1" step="1" value="5" />
-    <button id="applyBreak" class="pill small">OK</button>
-  </div>
-
-  <!-- Ряд 4: Звук: mute, громкость, колокол, цикл -->
-  <div class="row">
-    <button id="muteBtn" class="pill toggle" aria-pressed="false">🔊 Mute</button>
-    <span class="label">Громкость:</span>
-    <input id="volume" type="range" min="0" max="1" step="0.01" value="0.6"/>
-    <button id="bellBtn" class="pill toggle" aria-pressed="true" title="Звуковой сигнал по окончании">🔔</button>
-    <button id="loopBtn" class="pill toggle" aria-pressed="true" title="Авто-переход Работа↔Перерыв">🔁 Цикл</button>
-    <span class="spacer"></span>
-    <span class="hint">Музыка включится при нажатии «Старт» (требование браузера).</span>
-  </div>
+<div class="controls">
+    <div>
+        <label>Работа: 
+            <select id="workDuration">
+                <option value="25">25 мин</option>
+                <option value="30">30 мин</option>
+                <option value="45">45 мин</option>
+                <option value="60">60 мин</option>
+            </select>
+        </label>
+        <label>Перерыв: 
+            <select id="breakDuration">
+                <option value="5">5 мин</option>
+                <option value="10">10 мин</option>
+                <option value="15">15 мин</option>
+            </select>
+        </label>
+    </div>
+    <div>
+        <button id="startBtn">Старт</button>
+        <button id="resetBtn">Сброс</button>
+    </div>
+    <div>
+        <label>Громкость:
+            <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="0.5">
+        </label>
+    </div>
+    <div id="timer">00:00</div>
 </div>
 
+<audio id="bgAudio" autoplay loop>
+    <source src="rain_sound.mp3" type="audio/mpeg">
+</audio>
+
 <script>
-/* ======= ЭЛЕМЕНТЫ ======= */
-const audio = document.getElementById('lofi');
-const volume = document.getElementById('volume');
-const muteBtn = document.getElementById('muteBtn');
-const bellBtn = document.getElementById('bellBtn');
-const loopBtn = document.getElementById('loopBtn');
+    const timerDisplay = document.getElementById("timer");
+    const startBtn = document.getElementById("startBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const workSelect = document.getElementById("workDuration");
+    const breakSelect = document.getElementById("breakDuration");
+    const audio = document.getElementById("bgAudio");
+    const volumeControl = document.getElementById("volumeControl");
 
-const modeBadge = document.getElementById('modeBadge');
-const timeDisplay = document.getElementById('timeDisplay');
-const startPause = document.getElementById('startPause');
-const resetBtn = document.getElementById('resetBtn');
+    let timer;
+    let timeLeft = 0;
+    let isWorkTime = true;
 
-const presetWorkBtns = document.querySelectorAll('.preset-work');
-const presetBreakBtns = document.querySelectorAll('.preset-break');
-const customWork = document.getElementById('customWork');
-const applyWork = document.getElementById('applyWork');
-const customBreak = document.getElementById('customBreak');
-const applyBreak = document.getElementById('applyBreak');
+    function startTimer() {
+        clearInterval(timer);
+        timeLeft = (isWorkTime ? parseInt(workSelect.value) : parseInt(breakSelect.value)) * 60;
+        timer = setInterval(() => {
+            let minutes = Math.floor(timeLeft / 60);
+            let seconds = timeLeft % 60;
+            timerDisplay.textContent = 
+                String(minutes).padStart(2, '0') + ":" + String(seconds).padStart(2, '0');
+            timeLeft--;
+            if (timeLeft < 0) {
+                clearInterval(timer);
+                isWorkTime = !isWorkTime;
+                startTimer();
+            }
+        }, 1000);
+    }
 
-/* ======= СОСТОЯНИЕ ТАЙМЕРА ======= */
-let mode = 'work';            // 'work' | 'break'
-let workMinutes = 25;         // настраиваемое время работы
-let breakMinutes = 5;         // настраиваемое время перерыва
-let remaining = workMinutes * 60;  // секунды
-let running = false;
-let intervalId = null;
+    startBtn.addEventListener("click", startTimer);
+    resetBtn.addEventListener("click", () => {
+        clearInterval(timer);
+        timerDisplay.textContent = "00:00";
+        isWorkTime = true;
+    });
 
-/* ======= ВСПОМОГАТЕЛЬНЫЕ ======= */
-function fmt(sec){
-  const m = Math.floor(sec/60).toString().padStart(2,'0');
-  const s = (sec%60).toString().padStart(2,'0');
-  return `${m}:${s}`;
-}
-function setMode(newMode){
-  mode = newMode;
-  if(mode==='work'){
-    remaining = workMinutes * 60;
-    modeBadge.textContent = 'Работа';
-    modeBadge.classList.remove('break');
-  } else {
-    remaining = breakMinutes * 60;
-    modeBadge.textContent = 'Перерыв';
-    modeBadge.classList.add('break');
-  }
-  timeDisplay.textContent = fmt(remaining);
-}
-function tick(){
-  if(remaining>0){
-    remaining--;
-    timeDisplay.textContent = fmt(remaining);
-    return;
-  }
-  // закончилось
-  stopTimer(false);
-  if(bellBtn.getAttribute('aria-pressed')==='true'){ chime(); }
-  // авто-переход
-  if(loopBtn.getAttribute('aria-pressed')==='true'){
-    setMode(mode==='work' ? 'break' : 'work');
-    startTimer(); // автозапуск следующей фазы
-  }
-}
-
-/* ======= ТАЙМЕР ======= */
-function startTimer(){
-  if(running) return;
-  running = true;
-  startPause.textContent = '⏸ Пауза';
-  // запуск музыки по жесту
-  if(audio.paused){ audio.play().catch(()=>{}); }
-  intervalId = setInterval(tick, 1000);
-}
-function pauseTimer(){
-  running = false;
-  startPause.textContent = '▶ Старт';
-  clearInterval(intervalId);
-  intervalId = null;
-}
-function stopTimer(resetPhase=true){
-  running = false;
-  startPause.textContent = '▶ Старт';
-  clearInterval(intervalId);
-  intervalId = null;
-  if(resetPhase){
-    setMode(mode); // сброс текущей фазы к изначальному времени
-  }
-}
-
-/* ======= СИГНАЛ (WebAudio короткий тон) ======= */
-let audioCtx = null;
-function chime(){
-  try{
-    audioCtx = audioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = 'sine';
-    o.frequency.value = 880;
-    o.connect(g); g.connect(audioCtx.destination);
-    g.gain.value = 0.0001;
-    o.start();
-    // плавная огибающая
-    g.gain.exponentialRampToValueAtTime(0.2, audioCtx.currentTime + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.6);
-    o.stop(audioCtx.currentTime + 0.65);
-  }catch(e){}
-}
-
-/* ======= ОБРАБОТЧИКИ ======= */
-startPause.addEventListener('click', () => {
-  if(running) pauseTimer(); else startTimer();
-});
-
-resetBtn.addEventListener('click', () => {
-  stopTimer(true);
-});
-
-presetWorkBtns.forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    workMinutes = parseInt(btn.dataset.min,10);
-    if(mode==='work' && !running){ setMode('work'); }
-  });
-});
-applyWork.addEventListener('click', ()=>{
-  const v = Math.max(1, parseInt(customWork.value||'25',10));
-  workMinutes = v;
-  if(mode==='work' && !running){ setMode('work'); }
-});
-
-presetBreakBtns.forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    breakMinutes = parseInt(btn.dataset.min,10);
-    if(mode==='break' && !running){ setMode('break'); }
-  });
-});
-applyBreak.addEventListener('click', ()=>{
-  const v = Math.max(1, parseInt(customBreak.value||'5',10));
-  breakMinutes = v;
-  if(mode==='break' && !running){ setMode('break'); }
-});
-
-volume.addEventListener('input', e => {
-  audio.volume = parseFloat(e.target.value);
-});
-
-muteBtn.addEventListener('click', ()=>{
-  const pressed = muteBtn.getAttribute('aria-pressed')==='true';
-  const next = !pressed;
-  muteBtn.setAttribute('aria-pressed', String(next));
-  audio.muted = next;
-  muteBtn.textContent = next ? '🔇 Unmute' : '🔊 Mute';
-});
-
-bellBtn.addEventListener('click', ()=>{
-  const pressed = bellBtn.getAttribute('aria-pressed')==='true';
-  bellBtn.setAttribute('aria-pressed', String(!pressed));
-});
-
-loopBtn.addEventListener('click', ()=>{
-  const pressed = loopBtn.getAttribute('aria-pressed')==='true';
-  loopBtn.setAttribute('aria-pressed', String(!pressed));
-});
-
-/* ======= ИНИЦИАЛИЗАЦИЯ ======= */
-audio.volume = parseFloat(volume.value);
-audio.loop = true;  // если поток поддерживает
-setMode('work');    // установить начальный режим
+    volumeControl.addEventListener("input", (e) => {
+        audio.volume = e.target.value;
+    });
 </script>
+
 </body>
 </html>
