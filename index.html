@@ -156,8 +156,8 @@ muteBtn.onclick = () => { isMuted = !isMuted; radio.muted = isMuted; muteBtn.tex
 volume.oninput = ()=>{ radio.volume = volume.value; };
 
 radioBtn.onclick = () => {
-  if(radioPlaying){ radio.pause(); radioBtn.textContent="▶ Радио"; trackName.textContent="—"; }
-  else{ radio.play().catch(()=>{}); radioBtn.textContent="⏸ Радио"; fetchTitle(); }
+  if(radioPlaying){ radio.pause(); radioBtn.textContent="▶ Lo-Fi radio"; trackName.textContent="—"; }
+  else{ radio.play().catch(()=>{}); radioBtn.textContent="⏸ Lo-Fi radio"; fetchTitle(); }
   radioPlaying = !radioPlaying;
 };
 
@@ -178,4 +178,5 @@ function fetchTitle(){
 </script>
 </body>
 </html>
+
 
