@@ -1,285 +1,169 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pomodoro с каплями в форме слезы</title>
-  <style>
+<meta charset="UTF-8">
+<title>Pomodoro с дождём и Lo-Fi</title>
+<style>
     html, body {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      overflow: hidden;
-      font-family: Arial, sans-serif;
-      color: #fff;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        height: 100%;
+        background: black;
+        font-family: sans-serif;
+        color: white;
     }
-    #bg-video {
-      position: fixed;
-      top: 0;
-      left: 0;
-      min-width: 100%;
-      min-height: 100%;
-      object-fit: cover;
-      z-index: -3;
+    video {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        object-fit: cover;
+        z-index: -2;
     }
-    #rainCanvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
+    canvas {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        pointer-events: none;
+        z-index: -1;
     }
-    .overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.3);
-      z-index: -2;
+    .controls {
+        position: fixed;
+        top: 10px; left: 10px;
+        background: rgba(0,0,0,0.5);
+        padding: 10px;
+        border-radius: 8px;
     }
-    .container {
-      position: relative;
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      text-align: center;
+    .controls label {
+        display: block;
+        margin-top: 5px;
     }
-    .timer {
-      font-size: 4em;
-      margin: 20px 0;
+    button {
+        margin-top: 5px;
+        padding: 5px 10px;
+        background: #444;
+        border: none;
+        color: white;
+        cursor: pointer;
     }
-    button, select, input[type="range"] {
-      margin: 5px;
-      padding: 10px 20px;
-      font-size: 1em;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
+    button:hover {
+        background: #666;
     }
-    .volume-control {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-    }
-  </style>
+</style>
 </head>
 <body>
-  <video autoplay muted loop id="bg-video">
-    <source src="background.mp4" type="video/mp4">
-  </video>
-  <div class="overlay"></div>
-  <canvas id="rainCanvas"></canvas>
 
-  <div class="container">
-    <h1>Pomodoro Таймер</h1>
-    <div>
-      <label>Работа:
-        <select id="workSelect">
-          <option value="15">15 мин</option>
-          <option value="25" selected>25 мин</option>
-          <option value="50">50 мин</option>
-        </select>
-      </label>
-      <label>Отдых:
-        <select id="breakSelect">
-          <option value="5" selected>5 мин</option>
-          <option value="10">10 мин</option>
-        </select>
-      </label>
-    </div>
-    <div class="timer" id="timer">25:00</div>
-    <div>
-      <button id="startBtn">Старт</button>
-      <button id="resetBtn">Сброс</button>
-    </div>
-    <div class="volume-control">
-      <label for="volumeRange">Громкость:</label>
-      <input type="range" id="volumeRange" min="0" max="1" step="0.01" value="0.5">
-    </div>
-  </div>
+<video autoplay muted loop playsinline id="bgVideo">
+    <source src="forest.mp4" type="video/mp4">
+</video>
+<canvas id="raindrops"></canvas>
 
-  <script>
-    const canvas = document.getElementById('rainCanvas');
-    const ctx = canvas.getContext('2d');
-    const bgVideo = document.getElementById('bg-video');
+<div class="controls">
+    <button id="muteBtn">Mute</button>
+    <label>Громкость дождя: <input type="range" id="rainVolume" min="0" max="1" step="0.01" value="0.5"></label>
+    <label>Громкость Lo-Fi: <input type="range" id="lofiVolume" min="0" max="1" step="0.01" value="0.5"></label>
+    <button id="toggleLofi">Вкл/Выкл Lo-Fi</button>
+</div>
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      trailCanvas.width = canvas.width;
-      trailCanvas.height = canvas.height;
-    }
-    window.addEventListener('resize', resizeCanvas);
+<audio id="rainAudio" src="rain_sound.mp3" autoplay loop></audio>
+<audio id="lofiAudio" src="https://stream.lofi.cafe/lofi" loop></audio>
 
-    // Слой для следов
-    const trailCanvas = document.createElement('canvas');
-    const trailCtx = trailCanvas.getContext('2d');
-    document.body.appendChild(trailCanvas);
-    trailCanvas.style.position = 'fixed';
-    trailCanvas.style.top = '0';
-    trailCanvas.style.left = '0';
-    trailCanvas.style.width = '100%';
-    trailCanvas.style.height = '100%';
-    trailCanvas.style.zIndex = '-1';
+<script>
+const canvas = document.getElementById('raindrops');
+const ctx = canvas.getContext('2d');
+let drops = [];
 
-    resizeCanvas();
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
 
-    const offscreen = document.createElement('canvas');
-    const offCtx = offscreen.getContext('2d');
-
-    function updateVideoFrame() {
-      offscreen.width = canvas.width;
-      offscreen.height = canvas.height;
-      offCtx.drawImage(bgVideo, 0, 0, canvas.width, canvas.height);
-    }
-    setInterval(updateVideoFrame, 500);
-
-    function drawTeardropPath(ctx, x, y, width, height) {
-      ctx.beginPath();
-      ctx.moveTo(x, y - height / 2); // верхняя остринка
-      ctx.bezierCurveTo(
-        x + width / 2, y - height / 4,  // верхний изгиб справа
-        x + width / 2, y + height / 2,  // нижний изгиб справа
-        x, y + height / 2               // нижняя точка
-      );
-      ctx.bezierCurveTo(
-        x - width / 2, y + height / 2,  // нижний изгиб слева
-        x - width / 2, y - height / 4,  // верхний изгиб слева
-        x, y - height / 2               // замыкаем наверху
-      );
-      ctx.closePath();
-    }
-
-    class Drop {
-      constructor() { this.reset(); }
-      reset() {
+class Drop {
+    constructor() {
         this.x = Math.random() * canvas.width;
-        this.y = -50;
-        this.width = 18 + Math.random() * 6;
-        this.height = this.width * 2.8;
-        this.speed = 0.25 + Math.random() * 0.15;
-      }
-      update() {
-        this.y += this.speed;
-        if (this.y - this.height > canvas.height) this.reset();
-      }
-      drawTrail() {
-        const grad = trailCtx.createLinearGradient(this.x, 0, this.x, this.y);
-        grad.addColorStop(0, 'rgba(255,255,255,0.15)');
-        grad.addColorStop(1, 'rgba(255,255,255,0)');
-        trailCtx.fillStyle = grad;
-        trailCtx.fillRect(this.x - this.width/4, 0, this.width/2, this.y);
-      }
-      drawDrop() {
-        ctx.save();
-        drawTeardropPath(ctx, this.x, this.y, this.width, this.height);
-        ctx.clip();
-    class Raindrop {
-    constructor(x, y) {
-        this.x = x;
-        this.y = y;
-        this.width = 8;   // ширина капли
-        this.height = 16; // высота капли
-        this.speed = 0.6; // скорость стекания
+        this.y = 0;
+        this.length = canvas.height; // след до конца экрана
+        this.speed = 0.2 + Math.random() * 0.3;
+        this.radius = 8 + Math.random() * 6;
+        this.opacity = 1;
     }
-
-    draw(ctx) {
-        ctx.save();
-        ctx.translate(this.x, this.y);
-        ctx.scale(1.2, -1.2); // линза
-        ctx.globalAlpha = 0.9;
-        ctx.drawImage(
-          offscreen,
-          this.x - this.width / 2,
-          canvas.height - this.y - this.height / 2,
-          this.width,
-          this.height,
-          -this.width / 2,
-          -this.height / 2,
-          this.width,
-          this.height
-        ctx.beginPath();
-
-        // Форма слезы
-        ctx.moveTo(this.x, this.y);
-        ctx.bezierCurveTo(this.x - this.width/2, this.y + this.height/3,
-                          this.x - this.width/3, this.y + this.height,
-                          this.x, this.y + this.height);
-        ctx.bezierCurveTo(this.x + this.width/3, this.y + this.height,
-                          this.x + this.width/2, this.y + this.height/3,
-                          this.x, this.y);
-
-        ctx.closePath();
-
-        // Линзовый эффект
-        let grad = ctx.createRadialGradient(
-            this.x, this.y + this.height/3, 2,
-            this.x, this.y + this.height/2, this.height
-        );
-        ctx.restore();
-        grad.addColorStop(0, 'rgba(255,255,255,0.7)');
-        grad.addColorStop(0.5, 'rgba(255,255,255,0.2)');
-        grad.addColorStop(1, 'rgba(255,255,255,0.05)');
-
-        // Блик
-        const grad = ctx.createRadialGradient(this.x - this.width/4, this.y - this.height/4, 1, this.x, this.y, this.width);
-        grad.addColorStop(0, 'rgba(255,255,255,0.9)');
-        grad.addColorStop(0.5, 'rgba(255,255,255,0.3)');
-        grad.addColorStop(1, 'rgba(255,255,255,0)');
-        ctx.globalAlpha = 0.7;
-        ctx.fillStyle = grad;
-        ctx.fillRect(this.x - this.width, this.y - this.height, this.width * 2, this.height * 2);
-        ctx.fill();
-
-        ctx.restore();
-      }
-    }
-
-    drawTrail(trailCtx) {
-        trailCtx.save();
-        trailCtx.globalCompositeOperation = 'screen';
-
-        // Основной след
-        const grad = trailCtx.createLinearGradient(this.x, 0, this.x, this.y);
-        grad.addColorStop(0, 'rgba(255,255,255,0.07)');
-        grad.addColorStop(0.4, 'rgba(255,255,255,0.03)');
-        grad.addColorStop(0.8, 'rgba(255,255,255,0.015)');
-        grad.addColorStop(1, 'rgba(255,255,255,0)');
-
-        trailCtx.fillStyle = grad;
-        trailCtx.fillRect(this.x - this.width/6, 0, this.width/3, this.y);
-
-        // Блик в начале следа
-        const highlight = trailCtx.createRadialGradient(
-            this.x, this.y - this.height/2, 0,
-            this.x, this.y - this.height/2, this.width
-        );
-        highlight.addColorStop(0, 'rgba(255,255,255,0.12)');
-        highlight.addColorStop(1, 'rgba(255,255,255,0)');
-        trailCtx.fillStyle = highlight;
-        trailCtx.fillRect(this.x - this.width, this.y - this.height, this.width*2, this.height*2);
-
-        trailCtx.restore();
-    }
-
     update() {
         this.y += this.speed;
-        if (this.y > window.innerHeight) {
-            this.y = -this.height;
+        if (this.y > canvas.height + this.radius) {
+            this.reset();
         }
+    }
+    reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = -this.radius;
+        this.speed = 0.2 + Math.random() * 0.3;
+        this.radius = 8 + Math.random() * 6;
+    }
+    draw() {
+        const grd = ctx.createRadialGradient(this.x, this.y, this.radius * 0.3, this.x, this.y, this.radius);
+        grd.addColorStop(0, 'rgba(255,255,255,0.6)');
+        grd.addColorStop(0.5, 'rgba(255,255,255,0.2)');
+        grd.addColorStop(1, 'rgba(255,255,255,0)');
+        ctx.fillStyle = grd;
+
+        ctx.beginPath();
+        ctx.moveTo(this.x, this.y - this.radius * 1.5); // форма слезы
+        ctx.bezierCurveTo(this.x - this.radius, this.y, this.x - this.radius, this.y + this.radius * 1.5, this.x, this.y + this.radius * 1.5);
+        ctx.bezierCurveTo(this.x + this.radius, this.y + this.radius * 1.5, this.x + this.radius, this.y, this.x, this.y - this.radius * 1.5);
+        ctx.closePath();
+        ctx.fill();
+
+        const trailGrad = ctx.createLinearGradient(this.x, this.y - this.length, this.x, this.y);
+        trailGrad.addColorStop(0, 'rgba(255,255,255,0)');
+        trailGrad.addColorStop(1, 'rgba(255,255,255,0.15)');
+        ctx.fillStyle = trailGrad;
+        ctx.fillRect(this.x - this.radius / 4, this.y - this.length, this.radius / 2, this.length);
     }
 }
 
-    const drops = Array.from({ length: 10 }, () => new Drop());
+function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drops.forEach(d => {
+        d.update();
+        d.draw();
+    });
+    requestAnimationFrame(animate);
+}
 
-    function animate() {
-@@ -294,3 +314,4 @@
-  </script>
+for (let i = 0; i < 20; i++) {
+    drops.push(new Drop());
+}
+animate();
+
+// --- ЗВУК ---
+const rainAudio = document.getElementById('rainAudio');
+const lofiAudio = document.getElementById('lofiAudio');
+rainAudio.volume = 0.5;
+lofiAudio.volume = 0.5;
+
+document.getElementById('rainVolume').addEventListener('input', e => {
+    rainAudio.volume = e.target.value;
+});
+document.getElementById('lofiVolume').addEventListener('input', e => {
+    lofiAudio.volume = e.target.value;
+});
+
+document.getElementById('muteBtn').addEventListener('click', () => {
+    const isMuted = rainAudio.muted;
+    rainAudio.muted = !isMuted;
+    lofiAudio.muted = !isMuted;
+});
+
+document.getElementById('toggleLofi').addEventListener('click', () => {
+    if (lofiAudio.paused) {
+        lofiAudio.play();
+    } else {
+        lofiAudio.pause();
+    }
+});
+</script>
+
 </body>
 </html>
