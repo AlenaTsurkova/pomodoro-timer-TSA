@@ -2,185 +2,1287 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rainy forest Lo-Fi</title>
+
 <style>
-  body, html {
-    margin: 0; padding: 0; height: 100%; overflow: hidden;
-    font-family: 'Segoe UI', Arial, sans-serif; color: white;
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    font-family: 'Segoe UI', Arial, sans-serif;
+    color: white;
+    background: #000;
   }
-  video {
-    position: fixed; inset:0; width:100%; height:100%; object-fit:cover; z-index:-1;
+
+  /* =========================
+     ВИДЕО-ФОН
+     ========================= */
+
+  #bgVideo {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -2;
+    background: #000;
   }
-  /* Таймер внизу слева */
+
+  /* Затемнение неба/фона не используется,
+     чтобы видео оставалось максимально ярким */
+
+  /* =========================
+     CANVAS С КАПЛЯМИ
+     ========================= */
+
+  #rainCanvas {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  /* =========================
+     ТАЙМЕР
+     ========================= */
+
   .controls {
-    position: fixed; bottom:20px; left:20px;
-    background: rgba(0,0,0,0.4); padding:15px;
-    border-radius:15px; backdrop-filter:blur(8px);
-    box-shadow: 0 0 20px rgba(0,255,255,0.6);
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+
+    background: rgba(0, 0, 0, 0.40);
+    padding: 15px;
+
+    border-radius: 15px;
+    backdrop-filter: blur(8px);
+
+    box-shadow:
+      0 0 20px rgba(0,255,255,0.6);
+
+    z-index: 10;
   }
-  select, button, input[type="range"] {
-    margin:6px; padding:8px 14px; border-radius:12px;
-    border:2px solid rgba(0,255,255,0.6); font-size:14px;
-    background: rgba(0,255,255,0.05); color:white;
-    text-shadow: 0 0 5px rgba(255,255,255,0.6);
+
+  select,
+  button,
+  input[type="range"] {
+    margin: 6px;
+    padding: 8px 14px;
+
+    border-radius: 12px;
+    border: 2px solid rgba(0,255,255,0.6);
+
+    font-size: 14px;
+
+    background: rgba(0,255,255,0.05);
+    color: white;
+
+    text-shadow:
+      0 0 5px rgba(255,255,255,0.6);
+
     transition: all .3s ease;
-    box-shadow: 0 0 10px rgba(0,255,255,0.4);
+
+    box-shadow:
+      0 0 10px rgba(0,255,255,0.4);
+
     cursor: pointer;
   }
-  select option { background: black; color: cyan; padding:8px; }
-  select:hover, button:hover {
-    border-color: cyan; box-shadow: 0 0 20px cyan; transform: translateY(-2px);
+
+  select option {
+    background: #000;
+    color: cyan;
+    padding: 8px;
   }
-  button:active { transform: scale(.95); }
+
+  select:hover,
+  button:hover {
+    border-color: cyan;
+
+    box-shadow:
+      0 0 20px rgba(0,255,255,0.8);
+
+    transform: translateY(-2px);
+  }
+
+  button:active {
+    transform: scale(.95);
+  }
+
   input[type="range"] {
-    width:100px; appearance:none; background:transparent;
+    width: 100px;
+    appearance: none;
+    background: transparent;
   }
+
   input[type="range"]::-webkit-slider-thumb {
-    appearance:none; width:14px; height:14px; border-radius:50%;
-    background: cyan; box-shadow: 0 0 10px cyan; cursor: pointer;
+    appearance: none;
+
+    width: 14px;
+    height: 14px;
+
+    border-radius: 50%;
+
+    background: cyan;
+
+    box-shadow:
+      0 0 10px cyan;
+
+    cursor: pointer;
   }
+
   input[type="range"]::-webkit-slider-runnable-track {
-    height:4px; background: rgba(255,255,255,0.3); border-radius:2px;
+    height: 4px;
+
+    background: rgba(255,255,255,0.3);
+
+    border-radius: 2px;
   }
+
   #timer {
-    font-size:2em; margin-top:10px; font-weight:bold;
-    text-shadow: 0 0 15px cyan;
+    font-size: 2em;
+    margin-top: 10px;
+
+    font-weight: bold;
+
+    text-shadow:
+      0 0 15px cyan;
+
     animation: glow 2s infinite alternate;
   }
+
   @keyframes glow {
-    from { text-shadow: 0 0 10px cyan, 0 0 20px cyan; }
-    to { text-shadow: 0 0 20px cyan, 0 0 30px cyan; }
+    from {
+      text-shadow:
+        0 0 10px cyan,
+        0 0 20px cyan;
+    }
+
+    to {
+      text-shadow:
+        0 0 20px cyan,
+        0 0 30px cyan;
+    }
   }
-  /* Радио вверху справа */
+
+  /* =========================
+     РАДИО
+     ========================= */
+
   .radio-block {
-    position:fixed; top:20px; right:20px;
-    background: rgba(0,0,0,0.4); padding:10px 15px;
-    border-radius:15px; backdrop-filter:blur(8px);
-    box-shadow: 0 0 20px rgba(0,255,255,0.6);
-    text-align:center; width:200px;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+
+    background: rgba(0,0,0,0.40);
+
+    padding: 10px 15px;
+
+    border-radius: 15px;
+
+    backdrop-filter: blur(8px);
+
+    box-shadow:
+      0 0 20px rgba(0,255,255,0.6);
+
+    text-align: center;
+
+    width: 200px;
+
+    z-index: 10;
   }
+
   .radio-btn {
-    display:inline-block; width:100%;
-    padding:8px 0; font-size:14px; font-weight:bold;
-    color:white;
+    display: inline-block;
+
+    width: 100%;
+
+    padding: 8px 0;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    color: white;
+
     background: rgba(0,255,255,0.05);
-    border:2px solid cyan; border-radius:12px;
-    box-shadow: 0 0 10px cyan; cursor:pointer;
+
+    border: 2px solid cyan;
+
+    border-radius: 12px;
+
+    box-shadow:
+      0 0 10px cyan;
+
+    cursor: pointer;
+
     transition: all .3s ease;
   }
+
   .radio-btn:hover {
-    box-shadow: 0 0 20px cyan; transform: translateY(-2px);
+    box-shadow:
+      0 0 20px cyan;
+
+    transform: translateY(-2px);
   }
+
   #trackName {
-    margin-top:8px; font-size:13px; color:cyan;
-    text-shadow: 0 0 5px cyan, 0 0 10px cyan;
+    margin-top: 8px;
+
+    font-size: 13px;
+
+    color: cyan;
+
+    text-shadow:
+      0 0 5px cyan,
+      0 0 10px cyan;
+
     animation: glowTrack 2s infinite alternate;
-    height:1.2em; overflow:hidden;
+
+    height: 1.2em;
+
+    overflow: hidden;
   }
+
   @keyframes glowTrack {
-    from { text-shadow: 0 0 8px cyan, 0 0 15px cyan; }
-    to { text-shadow: 0 0 15px cyan, 0 0 25px cyan; }
+    from {
+      text-shadow:
+        0 0 8px cyan,
+        0 0 15px cyan;
+    }
+
+    to {
+      text-shadow:
+        0 0 15px cyan,
+        0 0 25px cyan;
+    }
   }
 </style>
 </head>
+
 <body>
 
-<video autoplay muted loop id="bgVideo">
-  <source src="background.mp4" type="video/mp4">
+<!-- =========================
+     ВИДЕО
+     ========================= -->
+
+<video
+  autoplay
+  muted
+  loop
+  playsinline
+  id="bgVideo">
+
+  <source
+    src="background.mp4"
+    type="video/mp4">
+
 </video>
 
+
+<!-- =========================
+     СЛОЙ КАПЕЛЬ
+     ========================= -->
+
+<canvas id="rainCanvas"></canvas>
+
+
+<!-- =========================
+     ТАЙМЕР
+     ========================= -->
+
 <div class="controls">
+
   <div>
-    <label>Работа:
+    <label>
+      Работа:
+
       <select id="workDuration">
-        <option value="25">25</option><option value="30">30</option>
-        <option value="45">45</option><option value="60">60</option>
+        <option value="25">25</option>
+        <option value="30">30</option>
+        <option value="45">45</option>
+        <option value="60">60</option>
       </select>
     </label>
-    <label>Перерыв:
+
+    <label>
+      Перерыв:
+
       <select id="breakDuration">
-        <option value="5">5</option><option value="10">10</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
         <option value="15">15</option>
       </select>
     </label>
   </div>
+
+
   <div>
     <button id="startBtn">▶</button>
     <button id="resetBtn">⏹</button>
     <button id="muteBtn">🔊</button>
   </div>
+
+
   <div>
-    <label>Громкость:
-      <input type="range" id="volumeControl" min="0" max="1" step="0.01" value="1">
+    <label>
+      Громкость:
+
+      <input
+        type="range"
+        id="volumeControl"
+        min="0"
+        max="1"
+        step="0.01"
+        value="1">
     </label>
   </div>
-  <div id="timer">00:00</div>
+
+
+  <div id="timer">
+    00:00
+  </div>
+
 </div>
+
+
+<!-- =========================
+     РАДИО
+     ========================= -->
 
 <div class="radio-block">
-  <button id="radioToggle" class="radio-btn">▶ Lo-Fi radio</button>
+
+  <button
+    id="radioToggle"
+    class="radio-btn">
+    ▶ Lo-Fi radio
+  </button>
+
   <div id="trackName"></div>
+
 </div>
 
+
 <audio id="radioStream">
-  <source src="https://radiorecord.hostingradio.ru/lofi96.aacp" type="audio/mpeg">
+  <source
+    src="https://radiorecord.hostingradio.ru/lofi96.aacp"
+    type="audio/aac">
 </audio>
 
+
 <script>
-const timerDisplay = document.getElementById("timer");
-const startBtn = document.getElementById("startBtn"), resetBtn = document.getElementById("resetBtn");
-const muteBtn = document.getElementById("muteBtn"), workSelect = document.getElementById("workDuration");
-const breakSelect = document.getElementById("breakDuration"), radioBtn = document.getElementById("radioToggle");
-const radio = document.getElementById("radioStream"), volume = document.getElementById("volumeControl");
-const trackName = document.getElementById("trackName");
 
-let timer, timeLeft = 0, isWork=true, isMuted=false, radioPlaying=false;
+/* =========================================================
+   ТАЙМЕР
+   ========================================================= */
 
-function startTimer(){
+const timerDisplay =
+  document.getElementById("timer");
+
+const startBtn =
+  document.getElementById("startBtn");
+
+const resetBtn =
+  document.getElementById("resetBtn");
+
+const muteBtn =
+  document.getElementById("muteBtn");
+
+const workSelect =
+  document.getElementById("workDuration");
+
+const breakSelect =
+  document.getElementById("breakDuration");
+
+const radioBtn =
+  document.getElementById("radioToggle");
+
+const radio =
+  document.getElementById("radioStream");
+
+const volume =
+  document.getElementById("volumeControl");
+
+const trackName =
+  document.getElementById("trackName");
+
+
+let timer;
+let timeLeft = 0;
+let isWork = true;
+let isMuted = false;
+let radioPlaying = false;
+
+
+function startTimer() {
+
   clearInterval(timer);
-  timeLeft = (isWork ? parseInt(workSelect.value) : parseInt(breakSelect.value))*60;
-  timer = setInterval(()=>{
-    let m=Math.floor(timeLeft/60), s=timeLeft%60;
-    timerDisplay.textContent = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
-    if(timeLeft-- < 0){
+
+  timeLeft =
+    (isWork
+      ? parseInt(workSelect.value)
+      : parseInt(breakSelect.value)
+    ) * 60;
+
+  timer = setInterval(() => {
+
+    let minutes =
+      Math.floor(timeLeft / 60);
+
+    let seconds =
+      timeLeft % 60;
+
+    timerDisplay.textContent =
+      `${String(minutes).padStart(2,'0')}:${String(seconds).padStart(2,'0')}`;
+
+    timeLeft--;
+
+    if (timeLeft < 0) {
+
       clearInterval(timer);
-      isWork=!isWork;
+
+      isWork = !isWork;
+
       startTimer();
     }
-  },1000);
+
+  }, 1000);
 }
+
 
 startBtn.onclick = startTimer;
-resetBtn.onclick = () => { clearInterval(timer); timerDisplay.textContent="00:00"; isWork=true; };
-muteBtn.onclick = () => { isMuted = !isMuted; radio.muted = isMuted; muteBtn.textContent = isMuted ? "🔇" : "🔊"; };
-volume.oninput = ()=>{ radio.volume = volume.value; };
 
-radioBtn.onclick = () => {
-  if(radioPlaying){ radio.pause(); radioBtn.textContent="▶ Lo-Fi radio"; trackName.textContent="—"; }
-  else{ radio.play().catch(()=>{}); radioBtn.textContent="⏸ Lo-Fi radio"; fetchTitle(); }
-  radioPlaying = !radioPlaying;
+
+resetBtn.onclick = () => {
+
+  clearInterval(timer);
+
+  timerDisplay.textContent = "00:00";
+
+  isWork = true;
+
 };
 
-function fetchTitle(){
-  fetch(radio.src, { headers: { 'Icy-MetaData': '1' } })
-    .then(res => {
-      const icyMetaInt = res.headers.get('icy-metaint');
-      if(!icyMetaInt) throw 'No icy-metaint';
-      return res.body.getReader().read().then(({value})=>{
-        const str = new TextDecoder().decode(value);
-        const match = str.match(/StreamTitle='([^']+)'/);
-        trackName.textContent = match ? match[1] : '—';
+
+muteBtn.onclick = () => {
+
+  isMuted = !isMuted;
+
+  radio.muted = isMuted;
+
+  muteBtn.textContent =
+    isMuted ? "🔇" : "🔊";
+
+};
+
+
+volume.oninput = () => {
+
+  radio.volume =
+    volume.value;
+
+};
+
+
+/* =========================================================
+   РАДИО
+   ========================================================= */
+
+radioBtn.onclick = () => {
+
+  if (radioPlaying) {
+
+    radio.pause();
+
+    radioBtn.textContent =
+      "▶ Lo-Fi radio";
+
+    trackName.textContent =
+      "—";
+
+    radioPlaying = false;
+
+  } else {
+
+    radio.play()
+      .then(() => {
+
+        radioBtn.textContent =
+          "⏸ Lo-Fi radio";
+
+        trackName.textContent =
+          "Radio Record Lo-Fi";
+
+        radioPlaying = true;
+
+      })
+      .catch(() => {
+
+        trackName.textContent =
+          "Нажми ещё раз";
+
       });
-    })
-    .catch(() => { trackName.textContent = '—'; });
+  }
+};
+
+
+/* =========================================================
+   ВИДЕО — ЗАЩИТА ОТ ОСТАНОВКИ
+   ========================================================= */
+
+const bgVideo =
+  document.getElementById("bgVideo");
+
+
+bgVideo.addEventListener("ended", () => {
+
+  bgVideo.currentTime = 0;
+
+  bgVideo.play().catch(() => {});
+
+});
+
+
+setInterval(() => {
+
+  if (bgVideo.paused || bgVideo.ended) {
+
+    bgVideo.play().catch(() => {});
+
+  }
+
+}, 30000);
+
+
+/* =========================================================
+   АНИМАЦИЯ КАПЕЛЬ
+   ========================================================= */
+
+const canvas =
+  document.getElementById("rainCanvas");
+
+const ctx =
+  canvas.getContext("2d");
+
+
+let width;
+let height;
+
+let drops = [];
+
+
+/*
+ * Небольшое количество объектов специально.
+ * Это важно, чтобы видео background.mp4
+ * не начало тормозить.
+ */
+
+const MAX_DROPS = 18;
+
+
+/* ---------------------------------------------------------
+   РАЗМЕР CANVAS
+   --------------------------------------------------------- */
+
+function resizeCanvas() {
+
+  const dpr =
+    Math.min(window.devicePixelRatio || 1, 1.5);
+
+  width =
+    window.innerWidth;
+
+  height =
+    window.innerHeight;
+
+  canvas.width =
+    width * dpr;
+
+  canvas.height =
+    height * dpr;
+
+  canvas.style.width =
+    width + "px";
+
+  canvas.style.height =
+    height + "px";
+
+  ctx.setTransform(
+    dpr,
+    0,
+    0,
+    dpr,
+    0,
+    0
+  );
 }
 
+
+window.addEventListener(
+  "resize",
+  resizeCanvas
+);
+
+resizeCanvas();
+
+
+/* ---------------------------------------------------------
+   СОЗДАНИЕ КАПЛЫ
+   --------------------------------------------------------- */
+
+function createDrop(
+  startRandom = true
+) {
+
+  /*
+   * Капли небольшие.
+   * Чем больше капля — тем сильнее
+   * ощущается эффект линзы.
+   */
+
+  const size =
+    5 + Math.random() * 7;
+
+
+  const drop = {
+
+    x:
+      Math.random() * width,
+
+    y:
+      startRandom
+        ? -30 - Math.random() * height
+        : -40,
+
+    size:
+
+      size,
+
+    /*
+     * Скорость специально небольшая.
+     */
+
+    speed:
+      0.16 + Math.random() * 0.28,
+
+    /*
+     * Длинный влажный след.
+     */
+
+    trail:
+      100 + Math.random() * 180,
+
+    /*
+     * Насколько быстро высыхает след.
+     */
+
+    fade:
+      0.0015 + Math.random() * 0.0015,
+
+    opacity:
+      0.42 + Math.random() * 0.30,
+
+    /*
+     * Небольшая вытянутость.
+     */
+
+    stretch:
+      1.15 + Math.random() * 0.45,
+
+    /*
+     * Никакого покачивания.
+     */
+
+    angle: 0,
+
+    /*
+     * Жизненный цикл.
+     */
+
+    life: 1,
+
+    /*
+     * Скорость изменения формы.
+     */
+
+    shape:
+      Math.random() * Math.PI * 2
+
+  };
+
+  drops.push(drop);
+}
+
+
+/* ---------------------------------------------------------
+   НАЧАЛЬНЫЕ КАПЛИ
+   --------------------------------------------------------- */
+
+for (
+  let i = 0;
+  i < MAX_DROPS;
+  i++
+) {
+
+  createDrop(true);
+
+}
+
+
+/* ---------------------------------------------------------
+   РИСОВАНИЕ ВЛАЖНОГО СЛЕДА
+   --------------------------------------------------------- */
+
+function drawTrail(drop) {
+
+  const x = drop.x;
+
+  const y = drop.y;
+
+  const length =
+    drop.trail;
+
+
+  /*
+   * След начинается прямо из нижней
+   * части капли.
+   */
+
+  const startY =
+    y + drop.size * 0.75;
+
+
+  /*
+   * Градиент делает верх следа
+   * более заметным, а конец почти
+   * полностью исчезает.
+   */
+
+  const gradient =
+    ctx.createLinearGradient(
+      0,
+      startY,
+      0,
+      startY + length
+    );
+
+
+  gradient.addColorStop(
+    0,
+    `rgba(210,245,255,${drop.opacity * 0.28})`
+  );
+
+  gradient.addColorStop(
+    0.12,
+    `rgba(190,235,245,${drop.opacity * 0.20})`
+  );
+
+  gradient.addColorStop(
+    0.45,
+    `rgba(180,225,235,${drop.opacity * 0.11})`
+  );
+
+  gradient.addColorStop(
+    0.75,
+    `rgba(170,220,230,${drop.opacity * 0.045})`
+  );
+
+  gradient.addColorStop(
+    1,
+    "rgba(170,220,230,0)"
+  );
+
+
+  /*
+   * Размытый центральный след.
+   */
+
+  ctx.save();
+
+  ctx.globalAlpha =
+    drop.life;
+
+  ctx.filter =
+    "blur(2.2px)";
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    x,
+    startY
+  );
+
+  ctx.lineTo(
+    x,
+    startY + length
+  );
+
+  ctx.strokeStyle =
+    gradient;
+
+  ctx.lineWidth =
+    Math.max(1.2, drop.size * 0.24);
+
+  ctx.lineCap =
+    "round";
+
+  ctx.stroke();
+
+  ctx.restore();
+
+
+  /*
+   * Очень тонкий влажный центр.
+   * Он помогает сделать след похожим
+   * именно на воду, а не на белую линию.
+   */
+
+  ctx.save();
+
+  ctx.globalAlpha =
+    drop.life * 0.45;
+
+  ctx.filter =
+    "blur(0.8px)";
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    x,
+    startY
+  );
+
+  ctx.lineTo(
+    x,
+    startY + length * 0.82
+  );
+
+  ctx.strokeStyle =
+    `rgba(215,245,250,${drop.opacity * 0.12})`;
+
+  ctx.lineWidth =
+    0.7;
+
+  ctx.lineCap =
+    "round";
+
+  ctx.stroke();
+
+  ctx.restore();
+
+}
+
+
+/* ---------------------------------------------------------
+   РИСОВАНИЕ КАПЛЫ
+   --------------------------------------------------------- */
+
+function drawDrop(drop) {
+
+  const x =
+    drop.x;
+
+  const y =
+    drop.y;
+
+  const s =
+    drop.size;
+
+
+  /*
+   * Капля постепенно вытягивается
+   * при движении.
+   */
+
+  const stretch =
+    drop.stretch +
+    Math.min(
+      drop.speed * 0.35,
+      0.18
+    );
+
+
+  ctx.save();
+
+
+  /*
+   * Плавное исчезновение в нижней
+   * части экрана.
+   */
+
+  let bottomFade = 1;
+
+  if (y > height - 120) {
+
+    bottomFade =
+      Math.max(
+        0,
+        (height - y) / 120
+      );
+
+  }
+
+
+  ctx.globalAlpha =
+    drop.opacity *
+    drop.life *
+    bottomFade;
+
+
+  /*
+   * Сначала лёгкое внешнее свечение.
+   */
+
+  ctx.shadowColor =
+    "rgba(180,235,255,0.45)";
+
+  ctx.shadowBlur =
+    7;
+
+
+  /*
+   * Форма слезы.
+   *
+   * Верх — округлая,
+   * низ — слегка заострённый.
+   */
+
+  ctx.beginPath();
+
+  ctx.moveTo(
+    x,
+    y - s * 1.45
+  );
+
+
+  ctx.bezierCurveTo(
+
+    x - s * 0.72,
+    y - s * 0.72,
+
+    x - s * 0.70,
+    y + s * 0.45,
+
+    x,
+    y + s * 1.15
+
+  );
+
+
+  ctx.bezierCurveTo(
+
+    x + s * 0.70,
+    y + s * 0.45,
+
+    x + s * 0.72,
+    y - s * 0.72,
+
+    x,
+    y - s * 1.45
+
+  );
+
+
+  ctx.closePath();
+
+
+  /*
+   * Основной объём.
+   */
+
+  const bodyGradient =
+    ctx.createRadialGradient(
+
+      x - s * 0.28,
+      y - s * 0.38,
+      s * 0.08,
+
+      x,
+      y,
+      s * 1.5
+
+    );
+
+
+  bodyGradient.addColorStop(
+    0,
+    "rgba(255,255,255,0.78)"
+  );
+
+  bodyGradient.addColorStop(
+    0.16,
+    "rgba(220,248,255,0.55)"
+  );
+
+  bodyGradient.addColorStop(
+    0.48,
+    "rgba(145,210,225,0.20)"
+  );
+
+  bodyGradient.addColorStop(
+    0.78,
+    "rgba(90,160,180,0.09)"
+  );
+
+  bodyGradient.addColorStop(
+    1,
+    "rgba(50,110,130,0.02)"
+  );
+
+
+  ctx.fillStyle =
+    bodyGradient;
+
+  ctx.fill();
+
+
+  /*
+   * Контур капли.
+   */
+
+  ctx.strokeStyle =
+    "rgba(220,250,255,0.38)";
+
+  ctx.lineWidth =
+    0.7;
+
+  ctx.stroke();
+
+
+  /*
+   * Маленький яркий блик.
+   * Он создаёт ощущение выпуклой линзы.
+   */
+
+  ctx.beginPath();
+
+  ctx.ellipse(
+
+    x - s * 0.28,
+    y - s * 0.48,
+
+    s * 0.17,
+    s * 0.42,
+
+    -0.25,
+    0,
+    Math.PI * 2
+
+  );
+
+
+  const highlight =
+    ctx.createLinearGradient(
+
+      x,
+      y - s,
+      x,
+      y
+
+    );
+
+
+  highlight.addColorStop(
+    0,
+    "rgba(255,255,255,0.75)"
+  );
+
+  highlight.addColorStop(
+    1,
+    "rgba(255,255,255,0)"
+  );
+
+
+  ctx.fillStyle =
+    highlight;
+
+  ctx.fill();
+
+
+  /*
+   * Второй очень слабый блик.
+   */
+
+  ctx.beginPath();
+
+  ctx.arc(
+    x + s * 0.32,
+    y - s * 0.25,
+    s * 0.10,
+    0,
+    Math.PI * 2
+  );
+
+  ctx.fillStyle =
+    "rgba(255,255,255,0.30)";
+
+  ctx.fill();
+
+
+  ctx.restore();
+
+}
+
+
+/* ---------------------------------------------------------
+   ОБНОВЛЕНИЕ
+   --------------------------------------------------------- */
+
+function updateDrop(drop) {
+
+  drop.y +=
+    drop.speed;
+
+
+  /*
+   * При движении вниз капля слегка
+   * вытягивается.
+   */
+
+  const progress =
+    Math.min(
+      drop.speed / 0.5,
+      1
+    );
+
+
+  drop.stretch =
+    1.15 +
+    progress * 0.6;
+
+
+  /*
+   * След постепенно высыхает.
+   */
+
+  if (drop.y > 0) {
+
+    drop.life -=
+      drop.fade * 0.15;
+
+  }
+
+
+  /*
+   * Когда капля подходит к нижнему
+   * краю — плавно исчезает.
+   */
+
+  if (drop.y > height - 80) {
+
+    drop.life -= 0.018;
+
+  }
+
+}
+
+
+/* ---------------------------------------------------------
+   ОСНОВНОЙ ЦИКЛ
+   --------------------------------------------------------- */
+
+let lastTime = performance.now();
+
+
+function animateRain(now) {
+
+  /*
+   * Ограничиваем влияние слишком
+   * большого FPS.
+   */
+
+  const delta =
+    Math.min(
+      now - lastTime,
+      40
+    );
+
+  lastTime = now;
+
+
+  /*
+   * Полностью очищаем canvas.
+   * Само видео находится под ним.
+   */
+
+  ctx.clearRect(
+    0,
+    0,
+    width,
+    height
+  );
+
+
+  for (
+    let i = drops.length - 1;
+    i >= 0;
+    i--
+  ) {
+
+    const drop =
+      drops[i];
+
+
+    updateDrop(drop);
+
+
+    /*
+     * След рисуется первым,
+     * затем поверх него сама капля.
+     */
+
+    drawTrail(drop);
+
+    drawDrop(drop);
+
+
+    /*
+     * Когда капля закончила движение,
+     * создаём новую сверху.
+     */
+
+    if (
+      drop.life <= 0 ||
+      drop.y > height + 30
+    ) {
+
+      drops.splice(i, 1);
+
+      createDrop(false);
+
+    }
+
+  }
+
+
+  /*
+   * Поддерживаем фиксированное
+   * небольшое количество капель.
+   */
+
+  while (
+    drops.length < MAX_DROPS
+  ) {
+
+    createDrop(false);
+
+  }
+
+
+  requestAnimationFrame(
+    animateRain
+  );
+}
+
+
+requestAnimationFrame(
+  animateRain
+);
+
 </script>
+
 </body>
 </html>
-
-
-
-
-
-
